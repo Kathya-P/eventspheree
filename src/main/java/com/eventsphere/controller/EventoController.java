@@ -1,12 +1,27 @@
 package com.eventsphere.controller;
 
 import com.eventsphere.model.Evento;
+import com.eventsphere.model.Categoria;
+import com.eventsphere.model.Usuario;
 import com.eventsphere.service.EventoService;
+import com.eventsphere.repository.CategoriaRepository;
+import com.eventsphere.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/eventos")
@@ -15,6 +30,86 @@ public class EventoController {
     
     @Autowired
     private EventoService eventoService;
+    
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+    
+    @Autowired
+    private CategoriaRepository categoriaRepository;
+    
+    // Directorio donde se guardarán las imágenes
+    private static final String UPLOAD_DIR = "src/main/resources/static/uploads/eventos/";
+    
+    @PostMapping("/crear-con-imagen")
+    public ResponseEntity<?> crearEventoConImagen(
+            @RequestParam("titulo") String titulo,
+            @RequestParam("descripcion") String descripcion,
+            @RequestParam("fechaEvento") String fechaEvento,
+            @RequestParam("lugar") String lugar,
+            @RequestParam("direccion") String direccion,
+            @RequestParam("capacidad") Integer capacidad,
+            @RequestParam("precio") Double precio,
+            @RequestParam("estado") String estado,
+            @RequestParam("organizadorId") Long organizadorId,
+            @RequestParam("categoriaId") Long categoriaId,
+            @RequestParam(value = "imagen", required = false) MultipartFile imagen) {
+        
+        try {
+            // Buscar organizador y categoría
+            Usuario organizador = usuarioRepository.findById(organizadorId)
+                    .orElseThrow(() -> new RuntimeException("Usuario organizador no encontrado"));
+            
+            Categoria categoria = categoriaRepository.findById(categoriaId)
+                    .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+            
+            // Crear evento
+            Evento evento = new Evento();
+            evento.setTitulo(titulo);
+            evento.setDescripcion(descripcion);
+            evento.setFechaEvento(LocalDateTime.parse(fechaEvento, DateTimeFormatter.ISO_DATE_TIME));
+            evento.setLugar(lugar);
+            evento.setDireccion(direccion);
+            evento.setCapacidad(capacidad);
+            evento.setPrecio(BigDecimal.valueOf(precio));
+            evento.setEstado(estado);
+            evento.setOrganizador(organizador);
+            evento.setCategoria(categoria);
+            
+            // Guardar imagen si se proporcionó
+            if (imagen != null && !imagen.isEmpty()) {
+                String nombreArchivo = guardarImagen(imagen);
+                evento.setImagenUrl("/uploads/eventos/" + nombreArchivo);
+            }
+            
+            Evento nuevoEvento = eventoService.crearEvento(evento);
+            return ResponseEntity.status(HttpStatus.CREATED).body(nuevoEvento);
+            
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al guardar la imagen: " + e.getMessage());
+        }
+    }
+    
+    private String guardarImagen(MultipartFile imagen) throws IOException {
+        // Crear directorio si no existe
+        Path uploadPath = Paths.get(UPLOAD_DIR);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+        
+        // Generar nombre único para la imagen
+        String extension = imagen.getOriginalFilename()
+                .substring(imagen.getOriginalFilename().lastIndexOf("."));
+        String nombreArchivo = UUID.randomUUID().toString() + extension;
+        
+        // Guardar archivo
+        Path rutaArchivo = uploadPath.resolve(nombreArchivo);
+        Files.copy(imagen.getInputStream(), rutaArchivo, StandardCopyOption.REPLACE_EXISTING);
+        
+        return nombreArchivo;
+    }
     
     @PostMapping
     public ResponseEntity<?> crearEvento(@RequestBody Evento evento) {

@@ -16,15 +16,117 @@ async function cargarBoletos() {
     const container = document.getElementById('boletosContainer');
     container.innerHTML = '<p class="text-muted">Cargando boletos...</p>';
     
-    // TODO: Implementar cuando exista el endpoint de boletos por usuario
-    setTimeout(() => {
-        container.innerHTML = `
-            <div class="alert alert-info">
-                Funcionalidad de boletos en desarrollo.
-                Se mostrará el historial de compras aquí.
-            </div>
-        `;
-    }, 500);
+    try {
+        const boletos = await BoletoAPI.listarPorUsuario(usuario.id);
+        
+        if (boletos.length === 0) {
+            container.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> No has comprado boletos aún.
+                    <a href="index.html" class="alert-link">Ver eventos disponibles</a>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = boletos.map(boleto => {
+            const estadoClass = {
+                'ACTIVO': 'success',
+                'USADO': 'secondary',
+                'CANCELADO': 'danger'
+            }[boleto.estado] || 'secondary';
+            
+            const estadoIcon = {
+                'ACTIVO': 'bi-check-circle',
+                'USADO': 'bi-check2-all',
+                'CANCELADO': 'bi-x-circle'
+            }[boleto.estado] || 'bi-ticket';
+            
+            return `
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="card-title mb-2">
+                                    <i class="bi bi-ticket-perforated text-primary"></i>
+                                    ${boleto.evento.titulo}
+                                </h5>
+                                <p class="mb-1">
+                                    <i class="bi bi-calendar3"></i>
+                                    <small>${Utils.formatearFecha(boleto.evento.fechaEvento)}</small>
+                                </p>
+                                <p class="mb-1">
+                                    <i class="bi bi-geo-alt"></i>
+                                    <small>${boleto.evento.lugar}</small>
+                                </p>
+                                <p class="mb-2">
+                                    <i class="bi bi-cash"></i>
+                                    <strong>${Utils.formatearPrecio(boleto.evento.precio)}</strong>
+                                </p>
+                                <span class="badge bg-${estadoClass}">
+                                    <i class="${estadoIcon}"></i> ${boleto.estado}
+                                </span>
+                                ${boleto.estado === 'USADO' ? 
+                                    `<small class="text-muted ms-2">Usado: ${Utils.formatearFecha(boleto.fechaUso)}</small>` 
+                                    : ''}
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="qr-code-container p-3 bg-light rounded">
+                                    <div class="mb-2">
+                                        <i class="bi bi-qr-code" style="font-size: 80px;"></i>
+                                    </div>
+                                    <small class="text-muted d-block">${boleto.codigoQR}</small>
+                                    <button class="btn btn-sm btn-outline-primary mt-2" onclick="verQR('${boleto.codigoQR}')">
+                                        <i class="bi bi-eye"></i> Ver QR
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i> Comprado: ${Utils.formatearFecha(boleto.fechaCompra)}
+                            </small>
+                            ${boleto.estado === 'ACTIVO' ? 
+                                `<button class="btn btn-sm btn-danger float-end" onclick="cancelarBoleto(${boleto.id})">
+                                    <i class="bi bi-x"></i> Cancelar
+                                </button>` 
+                                : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('Error al cargar boletos:', error);
+        container.innerHTML = '<p class="text-danger">Error al cargar boletos</p>';
+    }
+}
+
+// Ver código QR
+function verQR(codigoQR) {
+    // Mostrar modal con QR grande
+    alert(`Código QR: ${codigoQR}\n\nEn una implementación completa, aquí se mostraría un QR code visual usando una librería como qrcode.js`);
+}
+
+// Cancelar boleto
+async function cancelarBoleto(boletoId) {
+    if (!confirm('¿Estás seguro de cancelar este boleto?\nEsta acción no se puede deshacer.')) {
+        return;
+    }
+    
+    try {
+        const response = await BoletoAPI.cancelar(boletoId);
+        if (response.ok) {
+            alert('Boleto cancelado correctamente');
+            cargarBoletos(); // Recargar lista
+        } else {
+            const error = await response.text();
+            alert(`Error: ${error}`);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error de conexión');
+    }
 }
 
 // Cargar eventos del usuario

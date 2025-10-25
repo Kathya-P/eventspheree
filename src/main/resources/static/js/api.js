@@ -101,6 +101,23 @@ const EventoAPI = {
 
 // Funciones para el API de Boletos
 const BoletoAPI = {
+    comprar: async (usuarioId, eventoId) => {
+        const response = await fetch(`${API_BASE_URL}/boletos/comprar?usuarioId=${usuarioId}&eventoId=${eventoId}`, {
+            method: 'POST'
+        });
+        return response;
+    },
+    
+    listarPorUsuario: async (usuarioId) => {
+        const response = await fetch(`${API_BASE_URL}/boletos/usuario/${usuarioId}`);
+        return await response.json();
+    },
+    
+    listarPorEvento: async (eventoId) => {
+        const response = await fetch(`${API_BASE_URL}/boletos/evento/${eventoId}`);
+        return await response.json();
+    },
+    
     buscarPorId: async (id) => {
         const response = await fetch(`${API_BASE_URL}/boletos/${id}`);
         return await response.json();
@@ -120,6 +137,55 @@ const BoletoAPI = {
     
     cancelar: async (id) => {
         const response = await fetch(`${API_BASE_URL}/boletos/${id}`, {
+            method: 'DELETE'
+        });
+        return response;
+    }
+};
+
+// Funciones para el API de Reseñas
+const ResenaAPI = {
+    crear: async (usuarioId, eventoId, calificacion, comentario) => {
+        const params = new URLSearchParams({
+            usuarioId,
+            eventoId,
+            calificacion
+        });
+        if (comentario) params.append('comentario', comentario);
+        
+        const response = await fetch(`${API_BASE_URL}/resenas?${params}`, {
+            method: 'POST'
+        });
+        return response;
+    },
+    
+    listarPorEvento: async (eventoId) => {
+        const response = await fetch(`${API_BASE_URL}/resenas/evento/${eventoId}`);
+        return await response.json();
+    },
+    
+    obtenerPromedio: async (eventoId) => {
+        const response = await fetch(`${API_BASE_URL}/resenas/evento/${eventoId}/promedio`);
+        return await response.json();
+    },
+    
+    buscarPorId: async (id) => {
+        const response = await fetch(`${API_BASE_URL}/resenas/${id}`);
+        return await response.json();
+    },
+    
+    actualizar: async (id, calificacion, comentario) => {
+        const params = new URLSearchParams({ calificacion });
+        if (comentario) params.append('comentario', comentario);
+        
+        const response = await fetch(`${API_BASE_URL}/resenas/${id}?${params}`, {
+            method: 'PUT'
+        });
+        return response;
+    },
+    
+    eliminar: async (id) => {
+        const response = await fetch(`${API_BASE_URL}/resenas/${id}`, {
             method: 'DELETE'
         });
         return response;

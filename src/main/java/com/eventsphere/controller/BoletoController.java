@@ -1,7 +1,11 @@
 package com.eventsphere.controller;
 
 import com.eventsphere.model.Boleto;
+import com.eventsphere.model.Evento;
+import com.eventsphere.model.Usuario;
 import com.eventsphere.service.BoletoService;
+import com.eventsphere.repository.EventoRepository;
+import com.eventsphere.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,11 +20,42 @@ public class BoletoController {
     @Autowired
     private BoletoService boletoService;
     
-    @GetMapping
-    public ResponseEntity<List<Boleto>> listarBoletos() {
-        // Este endpoint necesitaría filtros por usuario/evento
-        // Por ahora retornamos error porque no es práctico listar todos
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+    
+    @Autowired
+    private EventoRepository eventoRepository;
+    
+    @PostMapping("/comprar")
+    public ResponseEntity<?> comprarBoleto(
+            @RequestParam Long usuarioId,
+            @RequestParam Long eventoId) {
+        try {
+            Usuario usuario = usuarioRepository.findById(usuarioId)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            
+            Evento evento = eventoRepository.findById(eventoId)
+                    .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
+            
+            Boleto boleto = boletoService.comprarBoleto(usuario, evento);
+            return ResponseEntity.status(HttpStatus.CREATED).body(boleto);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<List<Boleto>> listarBoletosPorUsuario(@PathVariable Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        return ResponseEntity.ok(boletoService.listarPorUsuario(usuario));
+    }
+    
+    @GetMapping("/evento/{eventoId}")
+    public ResponseEntity<List<Boleto>> listarBoletosPorEvento(@PathVariable Long eventoId) {
+        Evento evento = eventoRepository.findById(eventoId)
+                .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
+        return ResponseEntity.ok(boletoService.listarPorEvento(evento));
     }
     
     @GetMapping("/{id}")

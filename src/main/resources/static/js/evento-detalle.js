@@ -19,6 +19,7 @@ async function cargarEvento() {
     try {
         eventoActual = await EventoAPI.buscarPorId(eventoId);
         mostrarEvento(eventoActual);
+        cargarResenas(); // Cargar reseñas del evento
     } catch (error) {
         console.error('Error al cargar evento:', error);
         alert('Error al cargar el evento');
@@ -31,7 +32,8 @@ function mostrarEvento(evento) {
     document.getElementById('loadingSpinner').classList.add('d-none');
     document.getElementById('eventoContainer').classList.remove('d-none');
     
-    const imagenUrl = evento.imagenUrl || 'https://via.placeholder.com/800x400?text=Evento';
+    // Si hay imagen, usar la subida; si no, usar placeholder según categoría
+    const imagenUrl = evento.imagenUrl || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&h=400&fit=crop';
     const disponibles = evento.capacidad - evento.entradasVendidas;
     
     document.getElementById('eventoImagen').src = imagenUrl;
@@ -63,17 +65,142 @@ async function comprarBoleto() {
         return;
     }
     
-    if (confirm(`¿Confirmar compra de boleto para "${eventoActual.titulo}"?\nPrecio: ${Utils.formatearPrecio(eventoActual.precio)}`)) {
-        alert('Funcionalidad de compra en desarrollo. Se integrará con el BoletoService.');
-        // TODO: Implementar llamada a BoletoAPI cuando esté disponible el endpoint de compra
+    const disponibles = eventoActual.capacidad - eventoActual.entradasVendidas;
+    if (disponibles <= 0) {
+        alert('Lo sentimos, este evento está agotado');
+        return;
+    }
+    
+    if (confirm(`¿Confirmar compra de boleto para "${eventoActual.titulo}"?\n\nPrecio: ${Utils.formatearPrecio(eventoActual.precio)}\nFecha: ${Utils.formatearFecha(eventoActual.fechaEvento)}`)) {
+        try {
+            const response = await BoletoAPI.comprar(usuario.id, eventoActual.id);
+            
+            if (response.ok) {
+                const boleto = await response.json();
+                alert(`¡Compra exitosa! 🎉\n\nCódigo QR: ${boleto.codigoQR}\n\nPuedes ver tu boleto en "Mi Perfil"`);
+                // Recargar evento para actualizar disponibilidad
+                await cargarEvento();
+            } else {
+                const error = await response.text();
+                alert(`Error: ${error}`);
+            }
+        } catch (error) {
+            console.error('Error al comprar boleto:', error);
+            alert('Error de conexión. Intenta nuevamente.');
+        }
     }
 }
 
+// Cargar reseñas
+async function cargarResenas() {
+    try {
+        const resenas = await ResenaAPI.listarPorEvento(eventoId);
+        const promedio = await ResenaAPI.obtenerPromedio(eventoId);
+        
+        mostrarPromedio(promedio);
+        mostrarResenas(resenas);
+    } catch (error) {
+        console.error('Error al cargar reseñas:', error);
+    }
+}
+
+// Mostrar promedio de calificación
+function mostrarPromedio(data) {
+    const container = document.getElementById('promedioCalificacion');
+    if (!container) return;
+    
+    const estrellas = generarEstrellas(data.promedio);
+    container.innerHTML = `
+        <div class="d-flex align-items-center">
+            <div class="me-2">${estrellas}</div>
+            <span class="fw-bold">${data.promedio.toFixed(1)}</span>
+            <span class="text-muted ms-2">(${data.totalResenas} reseñas)</span>
+        </div>
+    `;
+}
+
+// Generar estrellas visuales
+function generarEstrellas(promedio) {
+    let html = '';
+    for (let i = 1; i <= 5; i++) {
+        if (i <= Math.floor(promedio)) {
+            html += '<i class="bi bi-star-fill text-warning"></i>';
+        } else if (i === Math.ceil(promedio) && promedio % 1 !== 0) {
+            html += '<i class="bi bi-star-half text-warning"></i>';
+        } else {
+            html += '<i class="bi bi-star text-warning"></i>';
+        }
+    }
+    return html;
+}
+
+// Mostrar lista de reseñas
+function mostrarResenas(resenas) {
+    const container = document.getElementById('resenasContainer');
+    if (!container) return;
+    
+    if (resenas.length === 0) {
+        container.innerHTML = `
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Aún no hay reseñas para este evento.
+                ¡Sé el primero en dejar tu opinión!
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = resenas.map(resena => `
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1">
+                            <i class="bi bi-person-circle"></i> ${resena.usuario.username}
+                        </h6>
+                        <div class="mb-2">${generarEstrellas(resena.calificacion)}</div>
+                    </div>
+                    <small class="text-muted">${Utils.formatearFecha(resena.fechaCreacion)}</small>
+                </div>
+                ${resena.comentario ? `<p class="mb-0 mt-2">${resena.comentario}</p>` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
 // Form de reseña
-document.getElementById('resenaForm')?.addEventListener('submit', (e) => {
+document.getElementById('resenaForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    alert('Funcionalidad de reseñas en desarrollo');
-    // TODO: Implementar cuando exista el endpoint de reseñas
+    
+    const usuario = Utils.obtenerUsuarioLocal();
+    if (!usuario) {
+        alert('Debes iniciar sesión para dejar una reseña');
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    const calificacion = document.querySelector('input[name="calificacion"]:checked')?.value;
+    const comentario = document.getElementById('comentarioResena').value.trim();
+    
+    if (!calificacion) {
+        alert('Por favor selecciona una calificación');
+        return;
+    }
+    
+    try {
+        const response = await ResenaAPI.crear(usuario.id, eventoId, parseInt(calificacion), comentario);
+        
+        if (response.ok) {
+            alert('¡Reseña publicada exitosamente! 🌟');
+            document.getElementById('resenaForm').reset();
+            cargarResenas(); // Recargar reseñas
+        } else {
+            const error = await response.text();
+            alert(`Error: ${error}`);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error de conexión. Intenta nuevamente.');
+    }
 });
 
 // Form de chat

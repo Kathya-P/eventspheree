@@ -67,7 +67,8 @@ function mostrarEventos(eventos) {
 
 // Crear tarjeta de evento
 function crearTarjetaEvento(evento) {
-    const imagenUrl = evento.imagenUrl || 'https://via.placeholder.com/400x250?text=Evento';
+    // Si hay imagen, usar la subida; si no, usar placeholder bonito de Unsplash
+    const imagenUrl = evento.imagenUrl || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=250&fit=crop';
     const disponibles = evento.capacidad - evento.entradasVendidas;
     const porcentajeVendido = (evento.entradasVendidas / evento.capacidad) * 100;
     

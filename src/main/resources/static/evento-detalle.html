@@ -113,29 +113,66 @@
                 <div class="tab-content" id="eventoTabsContent">
                     <!-- Reseñas -->
                     <div class="tab-pane fade show active" id="resenas" role="tabpanel">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="mb-3">Calificación Promedio</h5>
+                                <div id="promedioCalificacion">
+                                    <div class="text-muted">Calculando...</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="mb-3">Reseñas de los Asistentes</h5>
+                                <div id="resenasContainer">
+                                    <p class="text-muted">Cargando reseñas...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="card">
                             <div class="card-body">
-                                <h5>Reseñas y Calificaciones</h5>
-                                <div id="resenasContainer">
-                                    <p class="text-muted">No hay reseñas aún. ¡Sé el primero en dejar una!</p>
-                                </div>
-                                <hr>
-                                <h6>Dejar una reseña</h6>
+                                <h5 class="mb-3">
+                                    <i class="bi bi-pencil"></i> Dejar una Reseña
+                                </h5>
                                 <form id="resenaForm">
                                     <div class="mb-3">
-                                        <label class="form-label">Calificación</label>
-                                        <select class="form-select" id="calificacion">
-                                            <option value="5">★★★★★ (5 estrellas)</option>
-                                            <option value="4">★★★★☆ (4 estrellas)</option>
-                                            <option value="3">★★★☆☆ (3 estrellas)</option>
-                                            <option value="2">★★☆☆☆ (2 estrellas)</option>
-                                            <option value="1">★☆☆☆☆ (1 estrella)</option>
-                                        </select>
+                                        <label class="form-label">Calificación *</label>
+                                        <div class="btn-group" role="group">
+                                            <input type="radio" class="btn-check" name="calificacion" id="star5" value="5" required>
+                                            <label class="btn btn-outline-warning" for="star5">
+                                                <i class="bi bi-star-fill"></i> 5
+                                            </label>
+                                            
+                                            <input type="radio" class="btn-check" name="calificacion" id="star4" value="4">
+                                            <label class="btn btn-outline-warning" for="star4">
+                                                <i class="bi bi-star-fill"></i> 4
+                                            </label>
+                                            
+                                            <input type="radio" class="btn-check" name="calificacion" id="star3" value="3">
+                                            <label class="btn btn-outline-warning" for="star3">
+                                                <i class="bi bi-star-fill"></i> 3
+                                            </label>
+                                            
+                                            <input type="radio" class="btn-check" name="calificacion" id="star2" value="2">
+                                            <label class="btn btn-outline-warning" for="star2">
+                                                <i class="bi bi-star-fill"></i> 2
+                                            </label>
+                                            
+                                            <input type="radio" class="btn-check" name="calificacion" id="star1" value="1">
+                                            <label class="btn btn-outline-warning" for="star1">
+                                                <i class="bi bi-star-fill"></i> 1
+                                            </label>
+                                        </div>
                                     </div>
                                     <div class="mb-3">
-                                        <textarea class="form-control" id="comentario" rows="3" placeholder="Escribe tu comentario..."></textarea>
+                                        <label for="comentarioResena" class="form-label">Comentario (opcional)</label>
+                                        <textarea class="form-control" id="comentarioResena" rows="3" placeholder="Comparte tu experiencia..."></textarea>
                                     </div>
-                                    <button type="submit" class="btn btn-primary">Publicar Reseña</button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-send"></i> Publicar Reseña
+                                    </button>
                                 </form>
                             </div>
                         </div>

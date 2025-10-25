@@ -14,9 +14,13 @@ public interface ResenaRepository extends JpaRepository<Resena, Long> {
     
     List<Resena> findByEvento(Evento evento);
     
+    List<Resena> findByEventoOrderByFechaCreacionDesc(Evento evento);
+    
     List<Resena> findByUsuario(Usuario usuario);
     
     Optional<Resena> findByUsuarioAndEvento(Usuario usuario, Evento evento);
+    
+    boolean existsByUsuarioAndEvento(Usuario usuario, Evento evento);
     
     @Query("SELECT AVG(r.calificacion) FROM Resena r WHERE r.evento = :evento")
     Double calcularPromedioCalificacion(Evento evento);
