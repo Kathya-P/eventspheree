@@ -21,6 +21,7 @@ async function cargarEvento() {
         mostrarEvento(eventoActual);
         cargarResenas(); // Cargar reseñas del evento
         cargarMensajes(); // Cargar mensajes del chat
+        cargarFotos(); // Cargar galería de fotos
     } catch (error) {
         console.error('Error al cargar evento:', error);
         alert('Error al cargar el evento');
@@ -287,3 +288,174 @@ document.getElementById('chatForm')?.addEventListener('submit', async (e) => {
         alert('Error de conexión. Intenta nuevamente.');
     }
 });
+
+// ==================== FUNCIONALIDAD DE FOTOS ====================
+
+// Preview de imagen antes de subir
+document.getElementById('imagenFoto').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        // Validar tamaño (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('La imagen no debe superar los 5MB');
+            e.target.value = '';
+            document.getElementById('previewFoto').style.display = 'none';
+            return;
+        }
+        
+        // Validar tipo
+        if (!file.type.startsWith('image/')) {
+            alert('El archivo debe ser una imagen');
+            e.target.value = '';
+            document.getElementById('previewFoto').style.display = 'none';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            document.getElementById('previewFotoImg').src = event.target.result;
+            document.getElementById('previewFoto').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        document.getElementById('previewFoto').style.display = 'none';
+    }
+});
+
+// Subir foto
+document.getElementById('fotoForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const usuario = Utils.obtenerUsuarioLocal();
+    if (!usuario) {
+        alert('Debes iniciar sesión para subir fotos');
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    const imagenInput = document.getElementById('imagenFoto');
+    const descripcion = document.getElementById('descripcionFoto').value;
+    
+    if (!imagenInput.files || !imagenInput.files[0]) {
+        alert('Por favor selecciona una imagen');
+        return;
+    }
+    
+    try {
+        const foto = await FotoAPI.subir(usuario.id, eventoId, imagenInput.files[0], descripcion);
+        
+        if (foto.id) {
+            alert('Foto subida exitosamente');
+            
+            // Limpiar formulario
+            document.getElementById('fotoForm').reset();
+            document.getElementById('previewFoto').style.display = 'none';
+            
+            // Recargar galería
+            cargarFotos();
+        } else if (foto.error) {
+            alert(foto.error);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al subir la foto. Intenta nuevamente.');
+    }
+});
+
+// Cargar galería de fotos
+async function cargarFotos() {
+    try {
+        const fotos = await FotoAPI.listarPorEvento(eventoId);
+        const cantidad = await FotoAPI.contarPorEvento(eventoId);
+        
+        document.getElementById('contadorFotos').textContent = cantidad.cantidad;
+        mostrarFotos(fotos);
+    } catch (error) {
+        console.error('Error al cargar fotos:', error);
+        document.getElementById('fotosContainer').innerHTML = `
+            <p class="text-danger">Error al cargar las fotos</p>
+        `;
+    }
+}
+
+// Mostrar fotos en galería
+function mostrarFotos(fotos) {
+    const container = document.getElementById('fotosContainer');
+    
+    if (!fotos || fotos.length === 0) {
+        container.innerHTML = `
+            <div class="col-12 text-center text-muted py-5">
+                <i class="bi bi-images" style="font-size: 48px;"></i>
+                <p class="mt-2">No hay fotos aún.<br>¡Sé el primero en compartir!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const usuario = Utils.obtenerUsuarioLocal();
+    
+    container.innerHTML = fotos.map(foto => `
+        <div class="col-md-4 col-sm-6">
+            <div class="card h-100 shadow-sm">
+                <img src="${foto.url}" class="card-img-top" style="height: 250px; object-fit: cover; cursor: pointer;" 
+                     onclick="verFotoModal(${foto.id}, '${foto.url}', '${foto.descripcion || ''}', '${foto.usuario.username}', '${Utils.formatearFecha(foto.fechaSubida)}', ${usuario && usuario.id === foto.usuario.id})">
+                <div class="card-body p-2">
+                    <p class="small mb-1">
+                        <i class="bi bi-person-circle"></i> ${foto.usuario.username}
+                    </p>
+                    ${foto.descripcion ? `<p class="small text-muted mb-1">${foto.descripcion}</p>` : ''}
+                    <p class="small text-muted mb-0">
+                        <i class="bi bi-clock"></i> ${new Date(foto.fechaSubida).toLocaleDateString('es-ES')}
+                    </p>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Ver foto en modal
+function verFotoModal(id, url, descripcion, username, fecha, esMia) {
+    document.getElementById('fotoModalImg').src = url;
+    document.getElementById('fotoModalDescripcion').textContent = descripcion || 'Sin descripción';
+    document.getElementById('fotoModalInfo').innerHTML = `
+        Subida por <strong>${username}</strong> el ${fecha}
+    `;
+    
+    const btnEliminar = document.getElementById('btnEliminarFoto');
+    if (esMia) {
+        btnEliminar.style.display = 'block';
+        btnEliminar.onclick = () => eliminarFoto(id);
+    } else {
+        btnEliminar.style.display = 'none';
+    }
+    
+    const modal = new bootstrap.Modal(document.getElementById('fotoModal'));
+    modal.show();
+}
+
+// Eliminar foto
+async function eliminarFoto(id) {
+    if (!confirm('¿Estás seguro de que deseas eliminar esta foto?')) {
+        return;
+    }
+    
+    try {
+        const response = await FotoAPI.eliminar(id);
+        
+        if (response.mensaje) {
+            alert('Foto eliminada exitosamente');
+            
+            // Cerrar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('fotoModal'));
+            modal.hide();
+            
+            // Recargar galería
+            cargarFotos();
+        } else if (response.error) {
+            alert(response.error);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al eliminar la foto');
+    }
+}

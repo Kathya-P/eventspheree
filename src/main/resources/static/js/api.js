@@ -225,6 +225,45 @@ const MensajeAPI = {
     }
 };
 
+// Funciones para el API de Fotos
+const FotoAPI = {
+    subir: async (usuarioId, eventoId, imagen, descripcion = '') => {
+        const formData = new FormData();
+        formData.append('usuarioId', usuarioId);
+        formData.append('eventoId', eventoId);
+        formData.append('imagen', imagen);
+        formData.append('descripcion', descripcion);
+        
+        const response = await fetch(`${API_BASE_URL}/fotos`, {
+            method: 'POST',
+            body: formData
+        });
+        return response.json();
+    },
+    
+    listarPorEvento: async (eventoId) => {
+        const response = await fetch(`${API_BASE_URL}/fotos/evento/${eventoId}`);
+        return await response.json();
+    },
+    
+    buscarPorId: async (id) => {
+        const response = await fetch(`${API_BASE_URL}/fotos/${id}`);
+        return await response.json();
+    },
+    
+    eliminar: async (id) => {
+        const response = await fetch(`${API_BASE_URL}/fotos/${id}`, {
+            method: 'DELETE'
+        });
+        return response.json();
+    },
+    
+    contarPorEvento: async (eventoId) => {
+        const response = await fetch(`${API_BASE_URL}/fotos/evento/${eventoId}/count`);
+        return await response.json();
+    }
+};
+
 // Utilidades
 const Utils = {
     formatearFecha: (fechaISO) => {

@@ -195,10 +195,42 @@
 
                     <!-- Fotos -->
                     <div class="tab-pane fade" id="fotos" role="tabpanel">
+                        <!-- Formulario para subir fotos -->
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="mb-3">
+                                    <i class="bi bi-cloud-upload"></i> Subir Foto
+                                </h5>
+                                <form id="fotoForm">
+                                    <div class="mb-3">
+                                        <label for="imagenFoto" class="form-label">Selecciona una imagen *</label>
+                                        <input type="file" class="form-control" id="imagenFoto" accept="image/*" required>
+                                        <div class="form-text">Formatos: JPG, PNG, GIF. Máximo 5MB</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="descripcionFoto" class="form-label">Descripción (opcional)</label>
+                                        <input type="text" class="form-control" id="descripcionFoto" placeholder="Describe la foto...">
+                                    </div>
+                                    <!-- Preview -->
+                                    <div id="previewFoto" class="mb-3" style="display: none;">
+                                        <img id="previewFotoImg" class="img-fluid rounded" style="max-height: 300px;">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-upload"></i> Subir Foto
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Galería de fotos -->
                         <div class="card">
                             <div class="card-body">
+                                <h5 class="mb-3">
+                                    <i class="bi bi-images"></i> Galería del Evento
+                                    <span class="badge bg-secondary" id="contadorFotos">0</span>
+                                </h5>
                                 <div id="fotosContainer" class="row g-3">
-                                    <p class="text-muted">No hay fotos compartidas aún.</p>
+                                    <p class="text-muted">Cargando fotos...</p>
                                 </div>
                             </div>
                         </div>
@@ -206,7 +238,30 @@
                 </div>
             </div>
         </div>
-    </section>
+    </main>
+
+    <!-- Modal para ver foto en grande -->
+    <div class="modal fade" id="fotoModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="fotoModalTitulo">Foto del Evento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="fotoModalImg" class="img-fluid rounded">
+                    <p class="mt-3 text-muted" id="fotoModalDescripcion"></p>
+                    <p class="small text-muted" id="fotoModalInfo"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="btnEliminarFoto" style="display: none;">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/api.js"></script>
