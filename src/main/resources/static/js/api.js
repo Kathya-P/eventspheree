@@ -192,6 +192,39 @@ const ResenaAPI = {
     }
 };
 
+// Funciones para el API de Mensajes
+const MensajeAPI = {
+    enviar: async (usuarioId, eventoId, contenido) => {
+        const params = new URLSearchParams({
+            usuarioId,
+            eventoId,
+            contenido
+        });
+        
+        const response = await fetch(`${API_BASE_URL}/mensajes?${params}`, {
+            method: 'POST'
+        });
+        return response;
+    },
+    
+    listarPorEvento: async (eventoId) => {
+        const response = await fetch(`${API_BASE_URL}/mensajes/evento/${eventoId}`);
+        return await response.json();
+    },
+    
+    buscarPorId: async (id) => {
+        const response = await fetch(`${API_BASE_URL}/mensajes/${id}`);
+        return await response.json();
+    },
+    
+    eliminar: async (id) => {
+        const response = await fetch(`${API_BASE_URL}/mensajes/${id}`, {
+            method: 'DELETE'
+        });
+        return response;
+    }
+};
+
 // Utilidades
 const Utils = {
     formatearFecha: (fechaISO) => {

@@ -20,6 +20,7 @@ async function cargarEvento() {
         eventoActual = await EventoAPI.buscarPorId(eventoId);
         mostrarEvento(eventoActual);
         cargarResenas(); // Cargar reseñas del evento
+        cargarMensajes(); // Cargar mensajes del chat
     } catch (error) {
         console.error('Error al cargar evento:', error);
         alert('Error al cargar el evento');
@@ -203,9 +204,86 @@ document.getElementById('resenaForm')?.addEventListener('submit', async (e) => {
     }
 });
 
+// Cargar mensajes del chat
+async function cargarMensajes() {
+    try {
+        const mensajes = await MensajeAPI.listarPorEvento(eventoId);
+        mostrarMensajes(mensajes);
+    } catch (error) {
+        console.error('Error al cargar mensajes:', error);
+    }
+}
+
+// Mostrar mensajes en el chat
+function mostrarMensajes(mensajes) {
+    const container = document.getElementById('chatContainer');
+    if (!container) return;
+    
+    if (mensajes.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-chat-dots" style="font-size: 48px;"></i>
+                <p class="mt-2">No hay mensajes aún.<br>¡Inicia la conversación!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const usuario = Utils.obtenerUsuarioLocal();
+    
+    container.innerHTML = mensajes.map(mensaje => {
+        const esMio = usuario && mensaje.usuario.id === usuario.id;
+        const alignClass = esMio ? 'text-end' : 'text-start';
+        const bgClass = esMio ? 'bg-primary text-white' : 'bg-light';
+        
+        return `
+            <div class="${alignClass} mb-3">
+                <div class="d-inline-block ${bgClass} rounded-3 p-3 shadow-sm" style="max-width: 70%;">
+                    ${!esMio ? `<div class="fw-bold small mb-1">
+                        <i class="bi bi-person-circle"></i> ${mensaje.usuario.username}
+                    </div>` : ''}
+                    <div>${mensaje.contenido}</div>
+                    <div class="small opacity-75 mt-1">
+                        ${new Date(mensaje.fechaEnvio).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Scroll al final
+    container.scrollTop = container.scrollHeight;
+}
+
 // Form de chat
-document.getElementById('chatForm')?.addEventListener('submit', (e) => {
+document.getElementById('chatForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    alert('Funcionalidad de chat en desarrollo');
-    // TODO: Implementar cuando exista el endpoint de mensajes
+    
+    const usuario = Utils.obtenerUsuarioLocal();
+    if (!usuario) {
+        alert('Debes iniciar sesión para enviar mensajes');
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    const contenido = document.getElementById('mensajeTexto').value.trim();
+    
+    if (!contenido) {
+        return;
+    }
+    
+    try {
+        const response = await MensajeAPI.enviar(usuario.id, eventoId, contenido);
+        
+        if (response.ok) {
+            document.getElementById('mensajeTexto').value = '';
+            cargarMensajes(); // Recargar mensajes
+        } else {
+            const error = await response.text();
+            alert(`Error: ${error}`);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error de conexión. Intenta nuevamente.');
+    }
 });
