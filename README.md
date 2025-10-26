@@ -434,6 +434,7 @@ ORDER BY eventos_creados DESC;
 ## 👥 Autores
 
 - **Kathya-P** - [GitHub](https://github.com/Kathya-P)
+- **Justin** - [GitHub](https://github.com/jusslemus)
 
 ## 📄 Licencia
 
