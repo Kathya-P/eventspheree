@@ -43,14 +43,6 @@ public class Evento {
     @Column(length = 500)
     private String imagenUrl;
     
-    @JsonIgnore  // No enviar el BLOB en JSON
-    @Lob
-    @Column(name = "imagen_data", columnDefinition = "BLOB")
-    private byte[] imagenData;
-    
-    @Column(name = "imagen_tipo", length = 100)
-    private String imagenTipo; // image/jpeg, image/png, etc.
-    
     @Column(nullable = false, length = 20)
     private String estado = "ACTIVO"; // ACTIVO, CANCELADO, FINALIZADO
     
