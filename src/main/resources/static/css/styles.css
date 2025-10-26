@@ -1,34 +1,99 @@
 /* EventSphere - Estilos personalizados */
 
 :root {
-    --primary-color: #0d6efd;
-    --secondary-color: #6c757d;
+    --dark-blue: #1a2332;
+    --medium-blue: #2c3e50;
+    --light-blue: #34495e;
+    --accent-blue: #3498db;
+    --white-bg: #F5F9FB;
+    --text-light: #ecf0f1;
+    
+    /* Alias para compatibilidad */
+    --primary-color: #2c3e50;
+    --secondary-color: #34495e;
     --success-color: #198754;
-    --warning-color: #ffc107;
+    --warning-color: #3498db;
     --danger-color: #dc3545;
-    --dark-color: #212529;
+    --dark-color: #1a2332;
 }
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f8f9fa;
+    background-color: #F5F9FB;
 }
 
 /* Hero Section */
 .hero-section {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1a2332 0%, #2c3e50 100%);
     min-height: 350px;
     display: flex;
     align-items: center;
 }
 
 .bg-gradient {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1a2332 0%, #2c3e50 100%);
+}
+
+/* Colores personalizados */
+.bg-dark-blue {
+    background-color: #1a2332 !important;
+}
+
+.bg-medium-blue {
+    background-color: #2c3e50 !important;
+}
+
+.bg-light-blue {
+    background-color: #34495e !important;
+}
+
+.text-dark-blue {
+    color: #1a2332 !important;
+}
+
+.text-accent-blue {
+    color: #3498db !important;
+}
+
+.btn-brand {
+    background-color: #3498db;
+    border-color: #3498db;
+    color: white;
+}
+
+.btn-brand:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+    color: white;
+}
+
+.btn-dark-blue {
+    background-color: #2c3e50;
+    border-color: #2c3e50;
+    color: white;
+}
+
+.btn-dark-blue:hover {
+    background-color: #1a2332;
+    border-color: #1a2332;
+    color: white;
 }
 
 /* Navbar */
 .navbar-brand {
     font-size: 1.5rem;
+}
+
+.navbar-dark {
+    background-color: #1a2332 !important;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: white !important;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+    color: #3498db !important;
 }
 
 /* Cards de Eventos */
@@ -76,8 +141,8 @@ body {
 /* Forms */
 .form-control:focus,
 .form-select:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
 }
 
 /* Badges */
@@ -140,8 +205,8 @@ footer a:hover {
 }
 
 .nav-tabs .nav-link.active {
-    color: var(--primary-color);
-    border-bottom: 3px solid var(--primary-color);
+    color: #2c3e50;
+    border-bottom: 3px solid #2c3e50;
 }
 
 /* Progress bar */
