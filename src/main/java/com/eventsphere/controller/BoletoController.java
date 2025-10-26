@@ -29,16 +29,40 @@ public class BoletoController {
     @PostMapping("/comprar")
     public ResponseEntity<?> comprarBoleto(
             @RequestParam Long usuarioId,
-            @RequestParam Long eventoId) {
+            @RequestParam Long eventoId,
+            @RequestParam(defaultValue = "1") Integer cantidad) {
         try {
+            // Validar cantidad
+            if (cantidad < 1 || cantidad > 10) {
+                return ResponseEntity.badRequest().body("La cantidad debe estar entre 1 y 10 boletos");
+            }
+            
             Usuario usuario = usuarioRepository.findById(usuarioId)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
             
             Evento evento = eventoRepository.findById(eventoId)
                     .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
             
-            Boleto boleto = boletoService.comprarBoleto(usuario, evento);
-            return ResponseEntity.status(HttpStatus.CREATED).body(boleto);
+            // Validar disponibilidad
+            int disponibles = evento.getCapacidad() - evento.getEntradasVendidas();
+            if (cantidad > disponibles) {
+                return ResponseEntity.badRequest()
+                    .body("Solo hay " + disponibles + " boletos disponibles");
+            }
+            
+            // Comprar múltiples boletos
+            List<Boleto> boletos = new java.util.ArrayList<>();
+            for (int i = 0; i < cantidad; i++) {
+                Boleto boleto = boletoService.comprarBoleto(usuario, evento);
+                boletos.add(boleto);
+            }
+            
+            // Si solo es 1 boleto, devolver el objeto, si son varios devolver la lista
+            if (cantidad == 1) {
+                return ResponseEntity.status(HttpStatus.CREATED).body(boletos.get(0));
+            } else {
+                return ResponseEntity.status(HttpStatus.CREATED).body(boletos);
+            }
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

@@ -137,33 +137,32 @@ async function confirmarCompra() {
         btnConfirmar.disabled = true;
         btnConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
         
-        // Comprar boletos uno por uno
-        const boletos = [];
-        for (let i = 0; i < cantidad; i++) {
-            const response = await BoletoAPI.comprar(usuario.id, eventoActual.id);
+        // Comprar boletos en una sola llamada
+        const response = await BoletoAPI.comprar(usuario.id, eventoActual.id, cantidad);
+        
+        if (response.ok) {
+            const resultado = await response.json();
             
-            if (response.ok) {
-                const boleto = await response.json();
-                boletos.push(boleto);
+            // Cerrar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('compraModal'));
+            modal.hide();
+            
+            // Mostrar mensaje de éxito
+            let mensaje;
+            if (cantidad === 1) {
+                mensaje = `¡Compra exitosa! 🎉\n\nCódigo QR: ${resultado.codigoQR}\n\nPuedes ver tu boleto en "Mi Perfil"`;
             } else {
-                const error = await response.text();
-                throw new Error(error);
+                mensaje = `¡Compra exitosa! 🎉\n\nSe compraron ${cantidad} boletos.\n\nPuedes verlos en "Mi Perfil"`;
             }
+            
+            alert(mensaje);
+            
+            // Recargar evento para actualizar disponibilidad
+            await cargarEvento();
+        } else {
+            const error = await response.text();
+            throw new Error(error);
         }
-        
-        // Cerrar modal
-        const modal = bootstrap.Modal.getInstance(document.getElementById('compraModal'));
-        modal.hide();
-        
-        // Mostrar mensaje de éxito
-        const mensaje = cantidad === 1
-            ? `¡Compra exitosa! 🎉\n\nCódigo QR: ${boletos[0].codigoQR}\n\nPuedes ver tu boleto en "Mi Perfil"`
-            : `¡Compra exitosa! 🎉\n\nSe compraron ${cantidad} boletos.\n\nPuedes verlos en "Mi Perfil"`;
-        
-        alert(mensaje);
-        
-        // Recargar evento para actualizar disponibilidad
-        await cargarEvento();
         
     } catch (error) {
         console.error('Error al comprar boletos:', error);

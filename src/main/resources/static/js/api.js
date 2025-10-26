@@ -101,8 +101,8 @@ const EventoAPI = {
 
 // Funciones para el API de Boletos
 const BoletoAPI = {
-    comprar: async (usuarioId, eventoId) => {
-        const response = await fetch(`${API_BASE_URL}/boletos/comprar?usuarioId=${usuarioId}&eventoId=${eventoId}`, {
+    comprar: async (usuarioId, eventoId, cantidad = 1) => {
+        const response = await fetch(`${API_BASE_URL}/boletos/comprar?usuarioId=${usuarioId}&eventoId=${eventoId}&cantidad=${cantidad}`, {
             method: 'POST'
         });
         return response;
