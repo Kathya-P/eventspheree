@@ -14,14 +14,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/eventos")
@@ -36,9 +31,6 @@ public class EventoController {
     
     @Autowired
     private CategoriaRepository categoriaRepository;
-    
-    // Directorio donde se guardarán las imágenes
-    private static final String UPLOAD_DIR = "src/main/resources/static/uploads/eventos/";
     
     @PostMapping("/crear-con-imagen")
     public ResponseEntity<?> crearEventoConImagen(
@@ -75,13 +67,20 @@ public class EventoController {
             evento.setOrganizador(organizador);
             evento.setCategoria(categoria);
             
-            // Guardar imagen si se proporcionó
+            // Guardar imagen en la BD si se proporcionó
             if (imagen != null && !imagen.isEmpty()) {
-                String nombreArchivo = guardarImagen(imagen);
-                evento.setImagenUrl("/uploads/eventos/" + nombreArchivo);
+                evento.setImagenData(imagen.getBytes());
+                evento.setImagenTipo(imagen.getContentType());
             }
             
             Evento nuevoEvento = eventoService.crearEvento(evento);
+            
+            // Establecer imagenUrl después de guardar (cuando ya tenemos el ID)
+            if (imagen != null && !imagen.isEmpty()) {
+                nuevoEvento.setImagenUrl("/api/eventos/imagen/" + nuevoEvento.getId());
+                nuevoEvento = eventoService.actualizarEvento(nuevoEvento.getId(), nuevoEvento);
+            }
+            
             return ResponseEntity.status(HttpStatus.CREATED).body(nuevoEvento);
             
         } catch (RuntimeException e) {
@@ -90,25 +89,6 @@ public class EventoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al guardar la imagen: " + e.getMessage());
         }
-    }
-    
-    private String guardarImagen(MultipartFile imagen) throws IOException {
-        // Crear directorio si no existe
-        Path uploadPath = Paths.get(UPLOAD_DIR);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-        
-        // Generar nombre único para la imagen
-        String extension = imagen.getOriginalFilename()
-                .substring(imagen.getOriginalFilename().lastIndexOf("."));
-        String nombreArchivo = UUID.randomUUID().toString() + extension;
-        
-        // Guardar archivo
-        Path rutaArchivo = uploadPath.resolve(nombreArchivo);
-        Files.copy(imagen.getInputStream(), rutaArchivo, StandardCopyOption.REPLACE_EXISTING);
-        
-        return nombreArchivo;
     }
     
     @PostMapping
@@ -197,10 +177,11 @@ public class EventoController {
             evento.setOrganizador(organizador);
             evento.setCategoria(categoria);
             
-            // Actualizar imagen si se proporcionó una nueva
+            // Actualizar imagen en la BD si se proporcionó una nueva
             if (imagen != null && !imagen.isEmpty()) {
-                String nombreArchivo = guardarImagen(imagen);
-                evento.setImagenUrl("/uploads/eventos/" + nombreArchivo);
+                evento.setImagenData(imagen.getBytes());
+                evento.setImagenTipo(imagen.getContentType());
+                evento.setImagenUrl("/api/eventos/imagen/" + id);
             }
             
             Evento eventoActualizado = eventoService.actualizarEvento(id, evento);
@@ -232,5 +213,15 @@ public class EventoController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+    
+    @GetMapping("/imagen/{id}")
+    public ResponseEntity<byte[]> obtenerImagen(@PathVariable Long id) {
+        return eventoService.buscarPorId(id)
+                .filter(evento -> evento.getImagenData() != null)
+                .map(evento -> ResponseEntity.ok()
+                        .header("Content-Type", evento.getImagenTipo() != null ? evento.getImagenTipo() : "image/jpeg")
+                        .body(evento.getImagenData()))
+                .orElse(ResponseEntity.notFound().build());
     }
 }
