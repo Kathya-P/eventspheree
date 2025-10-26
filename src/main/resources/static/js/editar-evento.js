@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Cargar categorías
 async function cargarCategorias() {
     try {
-        const response = await fetch('http://localhost:8080/api/categorias');
+        const response = await fetch(`${API_BASE_URL}/categorias`);
         const categorias = await response.json();
         
         const select = document.getElementById('categoria');
@@ -113,7 +113,7 @@ document.getElementById('editarEventoForm').addEventListener('submit', async (e)
         formData.append('imagen', imagenInput.files[0]);
         
         try {
-            const response = await fetch(`http://localhost:8080/api/eventos/actualizar-con-imagen/${eventoId}`, {
+            const response = await fetch(`${API_BASE_URL}/eventos/actualizar-con-imagen/${eventoId}`, {
                 method: 'PUT',
                 body: formData
             });

@@ -210,7 +210,7 @@ async function cargarEstadisticas() {
     
     try {
         // Obtener estadísticas por organizador
-        const response = await fetch(`http://localhost:8080/api/estadisticas/organizador/${usuario.id}`);
+        const response = await fetch(`${API_BASE_URL}/estadisticas/organizador/${usuario.id}`);
         const estadisticas = await response.json();
         
         if (estadisticas.length === 0) {

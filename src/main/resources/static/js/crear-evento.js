@@ -36,7 +36,7 @@ function eliminarImagen() {
 // Cargar categorías desde la API
 async function cargarCategorias() {
     try {
-        const response = await fetch('http://localhost:8080/api/categorias');
+        const response = await fetch(`${API_BASE_URL}/categorias`);
         const categorias = await response.json();
         
         const select = document.getElementById('categoria');
@@ -100,7 +100,7 @@ document.getElementById('eventoForm').addEventListener('submit', async (e) => {
     }
     
     try {
-        const response = await fetch('http://localhost:8080/api/eventos/crear-con-imagen', {
+        const response = await fetch(`${API_BASE_URL}/eventos/crear-con-imagen`, {
             method: 'POST',
             body: formData
         });
