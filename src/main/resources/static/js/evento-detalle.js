@@ -52,8 +52,8 @@ function mostrarEvento(evento) {
     document.title = `${evento.titulo} - EventSphere`;
 }
 
-// Comprar boleto
-async function comprarBoleto() {
+// Abrir modal de compra cuando se abre
+document.getElementById('compraModal')?.addEventListener('show.bs.modal', function() {
     const usuario = Utils.obtenerUsuarioLocal();
     
     if (!usuario) {
@@ -68,27 +68,112 @@ async function comprarBoleto() {
     }
     
     const disponibles = eventoActual.capacidad - eventoActual.entradasVendidas;
+    
     if (disponibles <= 0) {
         alert('Lo sentimos, este evento está agotado');
+        bootstrap.Modal.getInstance(this).hide();
         return;
     }
     
-    if (confirm(`¿Confirmar compra de boleto para "${eventoActual.titulo}"?\n\nPrecio: ${Utils.formatearPrecio(eventoActual.precio)}\nFecha: ${Utils.formatearFecha(eventoActual.fechaEvento)}`)) {
-        try {
+    // Llenar datos del modal
+    document.getElementById('modalEventoTitulo').textContent = eventoActual.titulo;
+    document.getElementById('modalEventoFecha').textContent = Utils.formatearFecha(eventoActual.fechaEvento);
+    document.getElementById('modalEventoLugar').textContent = eventoActual.lugar;
+    document.getElementById('modalDisponibles').textContent = disponibles;
+    document.getElementById('modalPrecioUnitario').textContent = Utils.formatearPrecio(eventoActual.precio);
+    
+    // Configurar máximo de boletos
+    const maxBoletos = Math.min(10, disponibles);
+    document.getElementById('cantidadBoletos').max = maxBoletos;
+    document.getElementById('cantidadBoletos').value = 1;
+    
+    actualizarTotal();
+});
+
+// Cambiar cantidad con botones +/-
+function cambiarCantidad(delta) {
+    const input = document.getElementById('cantidadBoletos');
+    const valor = parseInt(input.value) + delta;
+    const min = parseInt(input.min);
+    const max = parseInt(input.max);
+    
+    if (valor >= min && valor <= max) {
+        input.value = valor;
+        actualizarTotal();
+    }
+}
+
+// Actualizar total de la compra
+function actualizarTotal() {
+    const cantidad = parseInt(document.getElementById('cantidadBoletos').value) || 1;
+    const precioUnitario = eventoActual.precio;
+    const total = precioUnitario * cantidad;
+    
+    document.getElementById('modalCantidad').textContent = cantidad;
+    document.getElementById('modalTotal').textContent = Utils.formatearPrecio(total);
+}
+
+// Confirmar compra de boletos
+async function confirmarCompra() {
+    const usuario = Utils.obtenerUsuarioLocal();
+    const cantidad = parseInt(document.getElementById('cantidadBoletos').value);
+    const disponibles = eventoActual.capacidad - eventoActual.entradasVendidas;
+    
+    if (cantidad > disponibles) {
+        alert(`Solo hay ${disponibles} boletos disponibles`);
+        return;
+    }
+    
+    const total = eventoActual.precio * cantidad;
+    const confirmMsg = `¿Confirmar compra de ${cantidad} boleto(s)?\n\nTotal: ${Utils.formatearPrecio(total)}`;
+    
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+    
+    try {
+        // Deshabilitar botón para evitar doble click
+        const btnConfirmar = event.target;
+        btnConfirmar.disabled = true;
+        btnConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
+        
+        // Comprar boletos uno por uno
+        const boletos = [];
+        for (let i = 0; i < cantidad; i++) {
             const response = await BoletoAPI.comprar(usuario.id, eventoActual.id);
             
             if (response.ok) {
                 const boleto = await response.json();
-                alert(`¡Compra exitosa! 🎉\n\nCódigo QR: ${boleto.codigoQR}\n\nPuedes ver tu boleto en "Mi Perfil"`);
-                // Recargar evento para actualizar disponibilidad
-                await cargarEvento();
+                boletos.push(boleto);
             } else {
                 const error = await response.text();
-                alert(`Error: ${error}`);
+                throw new Error(error);
             }
-        } catch (error) {
-            console.error('Error al comprar boleto:', error);
-            alert('Error de conexión. Intenta nuevamente.');
+        }
+        
+        // Cerrar modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('compraModal'));
+        modal.hide();
+        
+        // Mostrar mensaje de éxito
+        const mensaje = cantidad === 1
+            ? `¡Compra exitosa! 🎉\n\nCódigo QR: ${boletos[0].codigoQR}\n\nPuedes ver tu boleto en "Mi Perfil"`
+            : `¡Compra exitosa! 🎉\n\nSe compraron ${cantidad} boletos.\n\nPuedes verlos en "Mi Perfil"`;
+        
+        alert(mensaje);
+        
+        // Recargar evento para actualizar disponibilidad
+        await cargarEvento();
+        
+    } catch (error) {
+        console.error('Error al comprar boletos:', error);
+        alert(`Error: ${error.message || 'Error de conexión. Intenta nuevamente.'}`);
+    } finally {
+        // Re-habilitar botón
+        const btnConfirmar = document.querySelector('#compraModal .btn-primary');
+        if (btnConfirmar) {
+            btnConfirmar.disabled = false;
+            btnConfirmar.innerHTML = '<i class="bi bi-cart-check"></i> Confirmar Compra';
         }
     }
 }

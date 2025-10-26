@@ -83,8 +83,8 @@
                                     <span id="eventoDisponibilidad"></span>
                                 </p>
                                 
-                                <button class="btn btn-primary w-100 btn-lg" onclick="comprarBoleto()">
-                                    <i class="bi bi-ticket-perforated"></i> Comprar Boleto
+                                <button class="btn btn-primary w-100 btn-lg" data-bs-toggle="modal" data-bs-target="#compraModal">
+                                    <i class="bi bi-ticket-perforated"></i> Comprar Boletos
                                 </button>
                             </div>
                         </div>
@@ -258,6 +258,75 @@
                         <i class="bi bi-trash"></i> Eliminar
                     </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para comprar boletos -->
+    <div class="modal fade" id="compraModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-ticket-perforated-fill"></i> Comprar Boletos
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <h4 id="modalEventoTitulo"></h4>
+                        <p class="text-muted mb-1" id="modalEventoFecha"></p>
+                        <p class="text-muted" id="modalEventoLugar"></p>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Disponibles:</strong> <span id="modalDisponibles"></span> boletos
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="cantidadBoletos" class="form-label">
+                            <i class="bi bi-123"></i> Cantidad de boletos *
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <button class="btn btn-outline-secondary" type="button" onclick="cambiarCantidad(-1)">
+                                <i class="bi bi-dash-lg"></i>
+                            </button>
+                            <input type="number" class="form-control text-center fw-bold" id="cantidadBoletos" 
+                                   value="1" min="1" max="10" onchange="actualizarTotal()">
+                            <button class="btn btn-outline-secondary" type="button" onclick="cambiarCantidad(1)">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">Máximo 10 boletos por compra</div>
+                    </div>
+
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Precio unitario:</span>
+                                <span id="modalPrecioUnitario" class="fw-bold"></span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Cantidad:</span>
+                                <span id="modalCantidad" class="fw-bold">1</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between">
+                                <span class="fs-5 fw-bold">Total:</span>
+                                <span id="modalTotal" class="fs-4 fw-bold text-success"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary btn-lg" onclick="confirmarCompra()">
+                        <i class="bi bi-cart-check"></i> Confirmar Compra
+                    </button>
                 </div>
             </div>
         </div>
