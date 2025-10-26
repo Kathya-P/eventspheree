@@ -1,5 +1,5 @@
-// API Base URL
-const API_BASE_URL = 'http://localhost:8080/api';
+// API Base URL - Detecta automáticamente la URL del servidor
+const API_BASE_URL = `${window.location.origin}/api`;
 
 // Funciones para el API de Usuarios
 const UsuarioAPI = {
