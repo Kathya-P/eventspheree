@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     cargarBoletos();
     cargarMisEventos();
+    cargarEstadisticas();
 });
 
 // Cargar boletos del usuario
@@ -172,8 +173,7 @@ async function cargarMisEventos() {
 
 // Editar evento
 function editarEvento(id) {
-    alert('Funcionalidad de edición en desarrollo');
-    // TODO: Implementar página de edición
+    window.location.href = `editar-evento.html?id=${id}`;
 }
 
 // Eliminar evento
@@ -200,5 +200,82 @@ async function eliminarEvento(id) {
 function cerrarSesion() {
     if (confirm('¿Deseas cerrar sesión?')) {
         Utils.cerrarSesion();
+    }
+}
+
+// Cargar estadísticas del organizador
+async function cargarEstadisticas() {
+    const container = document.getElementById('estadisticasEventos');
+    container.innerHTML = '<p class="text-muted">Cargando estadísticas...</p>';
+    
+    try {
+        // Obtener estadísticas por organizador
+        const response = await fetch(`http://localhost:8080/api/estadisticas/organizador/${usuario.id}`);
+        const estadisticas = await response.json();
+        
+        if (estadisticas.length === 0) {
+            container.innerHTML = '<p class="text-muted">No tienes eventos para mostrar estadísticas.</p>';
+            return;
+        }
+        
+        // Calcular totales
+        let totalEventos = estadisticas.length;
+        let totalBoletos = estadisticas.reduce((sum, e) => sum + e.boletosVendidos, 0);
+        let ingresosTotales = estadisticas.reduce((sum, e) => sum + parseFloat(e.ingresosTotales), 0);
+        
+        // Actualizar tarjetas de resumen
+        document.getElementById('totalEventos').textContent = totalEventos;
+        document.getElementById('totalBoletos').textContent = totalBoletos;
+        document.getElementById('ingresosTotales').textContent = '$' + ingresosTotales.toFixed(2);
+        
+        // Mostrar estadísticas detalladas por evento
+        container.innerHTML = estadisticas.map(stat => `
+            <div class="card mb-3 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-calendar-event"></i> ${stat.tituloEvento}
+                        <span class="badge bg-light text-dark float-end">${stat.estadoEvento}</span>
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <i class="bi bi-ticket text-primary"></i>
+                                <strong>Boletos:</strong> ${stat.boletosVendidos} / ${stat.totalBoletos}
+                                (${stat.boletosDisponibles} disponibles)
+                            </p>
+                            <div class="progress mb-3" style="height: 25px;">
+                                <div class="progress-bar ${stat.porcentajeOcupacion > 80 ? 'bg-success' : stat.porcentajeOcupacion > 50 ? 'bg-warning' : 'bg-info'}" 
+                                     style="width: ${stat.porcentajeOcupacion}%">
+                                    ${stat.porcentajeOcupacion.toFixed(1)}%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <i class="bi bi-cash-coin text-success"></i>
+                                <strong>Ingresos:</strong> $${parseFloat(stat.ingresosTotales).toFixed(2)}
+                            </p>
+                            <p class="mb-2">
+                                <i class="bi bi-star-fill text-warning"></i>
+                                <strong>Reseñas:</strong> ${stat.totalResenas} 
+                                ${stat.totalResenas > 0 ? `(⭐ ${stat.promedioCalificacion.toFixed(1)})` : ''}
+                            </p>
+                            <p class="mb-2">
+                                <i class="bi bi-camera text-info"></i>
+                                <strong>Fotos:</strong> ${stat.totalFotos} | 
+                                <i class="bi bi-chat text-secondary"></i>
+                                <strong>Mensajes:</strong> ${stat.totalMensajes}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error al cargar estadísticas:', error);
+        container.innerHTML = '<p class="text-danger">Error al cargar estadísticas</p>';
     }
 }

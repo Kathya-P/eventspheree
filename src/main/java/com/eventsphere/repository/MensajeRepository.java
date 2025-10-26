@@ -17,4 +17,6 @@ public interface MensajeRepository extends JpaRepository<Mensaje, Long> {
     List<Mensaje> findByEventoOrderByFechaEnvioAsc(Evento evento);
     
     long countByEvento(Evento evento);
+    
+    long countByEventoId(Long eventoId);
 }

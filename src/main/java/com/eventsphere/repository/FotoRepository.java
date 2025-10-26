@@ -17,4 +17,6 @@ public interface FotoRepository extends JpaRepository<Foto, Long> {
     List<Foto> findByEventoOrderByFechaSubidaDesc(Evento evento);
     
     long countByEvento(Evento evento);
+    
+    long countByEventoId(Long eventoId);
 }

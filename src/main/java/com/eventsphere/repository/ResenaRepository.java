@@ -16,6 +16,9 @@ public interface ResenaRepository extends JpaRepository<Resena, Long> {
     
     List<Resena> findByEventoOrderByFechaCreacionDesc(Evento evento);
     
+    @Query("SELECT r.id, r.usuario.username, r.comentario, r.calificacion, r.fechaCreacion FROM Resena r WHERE r.evento.id = :eventoId ORDER BY r.fechaCreacion DESC")
+    List<Object[]> findByEventoId(Long eventoId);
+    
     List<Resena> findByUsuario(Usuario usuario);
     
     Optional<Resena> findByUsuarioAndEvento(Usuario usuario, Evento evento);

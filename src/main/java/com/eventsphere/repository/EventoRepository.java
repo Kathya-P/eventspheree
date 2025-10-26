@@ -16,6 +16,8 @@ public interface EventoRepository extends JpaRepository<Evento, Long> {
     
     List<Evento> findByOrganizador(Usuario organizador);
     
+    List<Evento> findByOrganizadorId(Long organizadorId);
+    
     List<Evento> findByCategoria(Categoria categoria);
     
     List<Evento> findByFechaEventoBetween(LocalDateTime fechaInicio, LocalDateTime fechaFin);

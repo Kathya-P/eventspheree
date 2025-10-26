@@ -158,6 +158,62 @@ public class EventoController {
         }
     }
     
+    @PutMapping("/actualizar-con-imagen/{id}")
+    public ResponseEntity<?> actualizarEventoConImagen(
+            @PathVariable Long id,
+            @RequestParam("titulo") String titulo,
+            @RequestParam("descripcion") String descripcion,
+            @RequestParam("fechaEvento") String fechaEvento,
+            @RequestParam("lugar") String lugar,
+            @RequestParam("direccion") String direccion,
+            @RequestParam("capacidad") Integer capacidad,
+            @RequestParam("precio") Double precio,
+            @RequestParam("estado") String estado,
+            @RequestParam("organizadorId") Long organizadorId,
+            @RequestParam("categoriaId") Long categoriaId,
+            @RequestParam(value = "imagen", required = false) MultipartFile imagen) {
+        
+        try {
+            // Buscar evento existente
+            Evento evento = eventoService.buscarPorId(id)
+                    .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
+            
+            // Buscar organizador y categoría
+            Usuario organizador = usuarioRepository.findById(organizadorId)
+                    .orElseThrow(() -> new RuntimeException("Usuario organizador no encontrado"));
+            
+            Categoria categoria = categoriaRepository.findById(categoriaId)
+                    .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+            
+            // Actualizar datos
+            evento.setTitulo(titulo);
+            evento.setDescripcion(descripcion);
+            evento.setFechaEvento(LocalDateTime.parse(fechaEvento, DateTimeFormatter.ISO_DATE_TIME));
+            evento.setLugar(lugar);
+            evento.setDireccion(direccion);
+            evento.setCapacidad(capacidad);
+            evento.setPrecio(BigDecimal.valueOf(precio));
+            evento.setEstado(estado);
+            evento.setOrganizador(organizador);
+            evento.setCategoria(categoria);
+            
+            // Actualizar imagen si se proporcionó una nueva
+            if (imagen != null && !imagen.isEmpty()) {
+                String nombreArchivo = guardarImagen(imagen);
+                evento.setImagenUrl("/uploads/eventos/" + nombreArchivo);
+            }
+            
+            Evento eventoActualizado = eventoService.actualizarEvento(id, evento);
+            return ResponseEntity.ok(eventoActualizado);
+            
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al guardar la imagen: " + e.getMessage());
+        }
+    }
+    
     @PutMapping("/{id}/cancelar")
     public ResponseEntity<?> cancelarEvento(@PathVariable Long id) {
         try {
