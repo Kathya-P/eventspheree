@@ -26,6 +26,9 @@ public class BoletoController {
     @Autowired
     private EventoRepository eventoRepository;
     
+    @Autowired
+    private com.eventsphere.service.QRService qrService;
+    
     @PostMapping("/comprar")
     public ResponseEntity<?> comprarBoleto(
             @RequestParam Long usuarioId,
@@ -113,6 +116,51 @@ public class BoletoController {
             return ResponseEntity.ok("Boleto cancelado correctamente");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    /**
+     * Genera la imagen QR en Base64 para un boleto
+     */
+    @GetMapping("/{id}/qr-image")
+    public ResponseEntity<?> obtenerImagenQR(@PathVariable Long id) {
+        try {
+            Boleto boleto = boletoService.buscarPorId(id)
+                    .orElseThrow(() -> new RuntimeException("Boleto no encontrado"));
+            
+            String qrBase64 = qrService.generarQRBase64(boleto.getCodigoQR());
+            
+            return ResponseEntity.ok(new java.util.HashMap<String, String>() {{
+                put("codigoQR", boleto.getCodigoQR());
+                put("imagenQR", qrBase64);
+            }});
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    /**
+     * Valida un código QR y registra check-in
+     */
+    @PostMapping("/validar-qr")
+    public ResponseEntity<?> validarQR(
+            @RequestParam String codigoQR,
+            @RequestParam Long organizadorId) {
+        try {
+            Boleto boleto = boletoService.validarQR(codigoQR, organizadorId);
+            
+            return ResponseEntity.ok(new java.util.HashMap<String, Object>() {{
+                put("success", true);
+                put("mensaje", "Boleto validado exitosamente");
+                put("boleto", boleto);
+                put("evento", boleto.getEvento().getTitulo());
+                put("usuario", boleto.getUsuario().getNombre());
+            }});
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(new java.util.HashMap<String, Object>() {{
+                put("success", false);
+                put("mensaje", e.getMessage());
+            }});
         }
     }
 }

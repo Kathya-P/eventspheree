@@ -73,13 +73,21 @@ async function cargarBoletos() {
                             </div>
                             <div class="col-md-4 text-center">
                                 <div class="qr-code-container p-3 bg-light rounded">
-                                    <div class="mb-2">
-                                        <i class="bi bi-qr-code" style="font-size: 80px;"></i>
+                                    <img id="qr-${boleto.id}" src="" alt="QR Code" style="width: 150px; height: 150px; display: none;" class="mb-2">
+                                    <div id="qr-loading-${boleto.id}" class="mb-2">
+                                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                            <span class="visually-hidden">Cargando...</span>
+                                        </div>
                                     </div>
                                     <small class="text-muted d-block">${boleto.codigoQR}</small>
-                                    <button class="btn btn-sm btn-outline-primary mt-2" onclick="verQR('${boleto.codigoQR}')">
-                                        <i class="bi bi-eye"></i> Ver QR
-                                    </button>
+                                    <div class="btn-group mt-2" role="group">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="descargarQR(${boleto.id}, '${boleto.codigoQR}')">
+                                            <i class="bi bi-download"></i> Descargar
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-info" onclick="verQRGrande(${boleto.id})">
+                                            <i class="bi bi-arrows-fullscreen"></i> Ampliar
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -97,16 +105,107 @@ async function cargarBoletos() {
                 </div>
             `;
         }).join('');
+        
+        // Cargar las imágenes QR para cada boleto
+        boletos.forEach(boleto => {
+            cargarImagenQR(boleto.id);
+        });
     } catch (error) {
         console.error('Error al cargar boletos:', error);
         container.innerHTML = '<p class="text-danger">Error al cargar boletos</p>';
     }
 }
 
-// Ver código QR
+// Cargar la imagen QR desde el backend
+async function cargarImagenQR(boletoId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/boletos/${boletoId}/qr-image`);
+        const data = await response.json();
+        
+        const imgElement = document.getElementById(`qr-${boletoId}`);
+        const loadingElement = document.getElementById(`qr-loading-${boletoId}`);
+        
+        if (imgElement && loadingElement) {
+            imgElement.src = data.imagenQR;
+            imgElement.style.display = 'block';
+            loadingElement.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error al cargar QR:', error);
+        const loadingElement = document.getElementById(`qr-loading-${boletoId}`);
+        if (loadingElement) {
+            loadingElement.innerHTML = '<small class="text-danger">Error al cargar QR</small>';
+        }
+    }
+}
+
+// Descargar código QR
+function descargarQR(boletoId, codigoQR) {
+    const imgElement = document.getElementById(`qr-${boletoId}`);
+    if (!imgElement || !imgElement.src) {
+        alert('El código QR aún no se ha cargado');
+        return;
+    }
+    
+    // Crear un enlace temporal para descargar
+    const link = document.createElement('a');
+    link.href = imgElement.src;
+    link.download = `boleto-${codigoQR}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Ver QR en grande (modal)
+function verQRGrande(boletoId) {
+    const imgElement = document.getElementById(`qr-${boletoId}`);
+    if (!imgElement || !imgElement.src) {
+        alert('El código QR aún no se ha cargado');
+        return;
+    }
+    
+    // Crear modal con Bootstrap
+    const modalHTML = `
+        <div class="modal fade" id="qrModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Código QR del Boleto</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <img src="${imgElement.src}" alt="QR Code" class="img-fluid" style="max-width: 400px;">
+                        <p class="mt-3 text-muted">Muestra este código en la entrada del evento</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-primary" onclick="descargarQR(${boletoId}, 'boleto')">
+                            <i class="bi bi-download"></i> Descargar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Insertar y mostrar modal
+    const existingModal = document.getElementById('qrModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    const modal = new bootstrap.Modal(document.getElementById('qrModal'));
+    modal.show();
+    
+    // Limpiar al cerrar
+    document.getElementById('qrModal').addEventListener('hidden.bs.modal', function () {
+        this.remove();
+    });
+}
+
+// Ver código QR (función legacy - mantener por compatibilidad)
 function verQR(codigoQR) {
-    // Mostrar modal con QR grande
-    alert(`Código QR: ${codigoQR}\n\nEn una implementación completa, aquí se mostraría un QR code visual usando una librería como qrcode.js`);
+    alert(`Código QR: ${codigoQR}`);
 }
 
 // Cancelar boleto

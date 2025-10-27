@@ -22,6 +22,9 @@ public class BoletoService {
     @Autowired
     private EventoRepository eventoRepository;
     
+    @Autowired
+    private QRService qrService;
+    
     public Boleto comprarBoleto(Usuario usuario, Evento evento) {
         // Validaciones
         if (!evento.getEstado().equals("ACTIVO")) {
@@ -46,6 +49,17 @@ public class BoletoService {
         boleto.setUsuario(usuario);
         boleto.setEvento(evento);
         boleto.setEstado("ACTIVO");
+        
+        // Guardar primero para obtener el ID
+        boleto = boletoRepository.save(boleto);
+        
+        // Generar código QR único después de tener el ID
+        String codigoUnico = qrService.generarCodigoUnico(
+            boleto.getId(), 
+            usuario.getId(), 
+            evento.getId()
+        );
+        boleto.setCodigoQR(codigoUnico);
         
         // Actualizar entradas vendidas
         evento.setEntradasVendidas(evento.getEntradasVendidas() + 1);
@@ -80,6 +94,36 @@ public class BoletoService {
         
         boleto.setEstado("USADO");
         boleto.setFechaUso(LocalDateTime.now());
+        return boletoRepository.save(boleto);
+    }
+    
+    /**
+     * Valida un QR y registra el check-in (asistencia)
+     */
+    public Boleto validarQR(String codigoQR, Long organizadorId) {
+        Boleto boleto = boletoRepository.findByCodigoQR(codigoQR)
+                .orElseThrow(() -> new RuntimeException("Código QR inválido"));
+        
+        // Verificar que el organizador sea el dueño del evento
+        if (!boleto.getEvento().getOrganizador().getId().equals(organizadorId)) {
+            throw new RuntimeException("No tienes permiso para validar este boleto");
+        }
+        
+        // Verificar que el boleto esté activo
+        if (!boleto.getEstado().equals("ACTIVO")) {
+            throw new RuntimeException("Este boleto ya fue usado o está cancelado");
+        }
+        
+        // Verificar que no haya asistido ya
+        if (Boolean.TRUE.equals(boleto.getAsistio())) {
+            throw new RuntimeException("Este boleto ya fue validado anteriormente");
+        }
+        
+        // Registrar asistencia
+        boleto.setAsistio(true);
+        boleto.setFechaUso(LocalDateTime.now());
+        boleto.setEstado("USADO");
+        
         return boletoRepository.save(boleto);
     }
     

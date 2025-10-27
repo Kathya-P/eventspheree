@@ -28,6 +28,9 @@ public class Boleto {
     @Column(nullable = false, length = 20)
     private String estado = "ACTIVO"; // ACTIVO, USADO, CANCELADO
     
+    @Column(name = "asistio")
+    private Boolean asistio = false;
+    
     @Column(name = "fecha_compra")
     private LocalDateTime fechaCompra;
     
