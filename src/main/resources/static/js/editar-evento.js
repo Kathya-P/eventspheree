@@ -63,6 +63,23 @@ async function cargarEvento() {
         document.getElementById('precio').value = eventoActual.precio;
         document.getElementById('estado').value = eventoActual.estado;
         
+        // Bloquear capacidad si hay boletos vendidos
+        const capacidadInput = document.getElementById('capacidad');
+        if (eventoActual.entradasVendidas > 0) {
+            capacidadInput.min = eventoActual.entradasVendidas;
+            capacidadInput.title = `Ya hay ${eventoActual.entradasVendidas} boletos vendidos. La capacidad no puede ser menor.`;
+            
+            // Agregar mensaje informativo
+            const capacidadDiv = capacidadInput.parentElement;
+            const existingHelp = capacidadDiv.querySelector('.form-text');
+            if (!existingHelp) {
+                const helpText = document.createElement('div');
+                helpText.className = 'form-text text-warning';
+                helpText.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> Ya hay ${eventoActual.entradasVendidas} boletos vendidos`;
+                capacidadDiv.appendChild(helpText);
+            }
+        }
+        
         // Mostrar imagen actual si existe
         if (eventoActual.imagenUrl) {
             document.getElementById('imagenPreview').innerHTML = `
@@ -106,7 +123,7 @@ document.getElementById('editarEventoForm').addEventListener('submit', async (e)
         formData.append('lugar', document.getElementById('lugar').value.trim());
         formData.append('direccion', eventoActual.direccion || '');
         formData.append('capacidad', nuevaCapacidad);
-        formData.append('precio', parseFloat(document.getElementById('precio').value));
+        formData.append('precio', eventoActual.precio); // Usar precio original (campo bloqueado)
         formData.append('estado', document.getElementById('estado').value);
         formData.append('organizadorId', eventoActual.organizador.id);
         formData.append('categoriaId', parseInt(document.getElementById('categoria').value));
@@ -147,7 +164,7 @@ document.getElementById('editarEventoForm').addEventListener('submit', async (e)
             lugar: document.getElementById('lugar').value.trim(),
             direccion: eventoActual.direccion,
             capacidad: nuevaCapacidad,
-            precio: parseFloat(document.getElementById('precio').value),
+            precio: eventoActual.precio, // Usar precio original (campo bloqueado)
             estado: document.getElementById('estado').value,
             imagenUrl: eventoActual.imagenUrl,
             organizador: eventoActual.organizador,
