@@ -27,8 +27,7 @@ function actualizarNavbar() {
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><a class="dropdown-item" href="mi-perfil.html"><i class="bi bi-person"></i> Mi Perfil</a></li>
-                    ${usuario.rol === 'ORGANIZADOR' || usuario.rol === 'ADMIN' ? 
-                        '<li><a class="dropdown-item" href="validar-qr.html"><i class="bi bi-qr-code-scan"></i> Validar QR</a></li>' : ''}
+                    <li><a class="dropdown-item" href="validar-qr.html"><i class="bi bi-qr-code-scan"></i> Validar QR</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-danger" href="#" onclick="cerrarSesion()"><i class="bi bi-box-arrow-right"></i> Cerrar Sesión</a></li>
                 </ul>
