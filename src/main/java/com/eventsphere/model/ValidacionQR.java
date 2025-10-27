@@ -14,11 +14,11 @@ public class ValidacionQR {
     @SequenceGenerator(name = "validacion_seq", sequenceName = "VALIDACION_QR_SEQ", allocationSize = 1)
     private Long id;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "boleto_id", nullable = false)
     private Boleto boleto;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "validador_id", nullable = false)
     private Usuario validador; // El organizador que validó
     

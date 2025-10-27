@@ -269,11 +269,11 @@ function cargarHistorial() {
         .then(response => response.json())
         .then(validaciones => {
             historial = validaciones.map(v => ({
-                tipo: v.resultado === 'EXITOSO' ? 'success' : 'error',
+                tipo: v.tipo, // Ya viene como 'success' o 'error'
                 mensaje: v.mensaje,
-                usuario: v.boleto?.usuario?.nombre || 'Desconocido',
-                evento: v.boleto?.evento?.titulo || 'Sin evento',
-                fecha: new Date(v.fechaValidacion)
+                usuario: v.usuario, // Ya viene con el nombre
+                evento: v.evento, // Ya viene con el título
+                fecha: new Date(v.fecha)
             }));
             actualizarHistorialUI();
         })

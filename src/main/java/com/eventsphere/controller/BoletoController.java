@@ -4,6 +4,7 @@ import com.eventsphere.model.Boleto;
 import com.eventsphere.model.Evento;
 import com.eventsphere.model.Usuario;
 import com.eventsphere.model.ValidacionQR;
+import com.eventsphere.dto.ValidacionHistorialDTO;
 import com.eventsphere.service.BoletoService;
 import com.eventsphere.repository.EventoRepository;
 import com.eventsphere.repository.UsuarioRepository;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/boletos")
@@ -183,7 +185,35 @@ public class BoletoController {
             List<ValidacionQR> validaciones = validacionQRRepository
                     .findTop10ByValidadorOrderByFechaValidacionDesc(usuario);
             
-            return ResponseEntity.ok(validaciones);
+            // Convertir a DTO con todos los datos necesarios
+            List<ValidacionHistorialDTO> historial = validaciones.stream()
+                    .map(v -> {
+                        String nombreUsuario = "Desconocido";
+                        String nombreEvento = "Sin evento";
+                        
+                        if (v.getBoleto() != null) {
+                            if (v.getBoleto().getUsuario() != null) {
+                                nombreUsuario = v.getBoleto().getUsuario().getNombre() != null 
+                                    ? v.getBoleto().getUsuario().getNombre() 
+                                    : v.getBoleto().getUsuario().getUsername();
+                            }
+                            if (v.getBoleto().getEvento() != null) {
+                                nombreEvento = v.getBoleto().getEvento().getTitulo();
+                            }
+                        }
+                        
+                        return new ValidacionHistorialDTO(
+                            v.getResultado(),
+                            v.getMensaje(),
+                            nombreUsuario,
+                            nombreEvento,
+                            v.getFechaValidacion(),
+                            v.getCodigoQR()
+                        );
+                    })
+                    .collect(Collectors.toList());
+            
+            return ResponseEntity.ok(historial);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
