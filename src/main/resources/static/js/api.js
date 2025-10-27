@@ -264,6 +264,19 @@ const FotoAPI = {
     }
 };
 
+// API de Categorías
+const CategoriaAPI = {
+    listar: async () => {
+        const response = await fetch(`${API_BASE_URL}/categorias`);
+        return await response.json();
+    },
+    
+    buscarPorId: async (id) => {
+        const response = await fetch(`${API_BASE_URL}/categorias/${id}`);
+        return await response.json();
+    }
+};
+
 // Utilidades
 const Utils = {
     formatearFecha: (fechaISO) => {

@@ -6,26 +6,40 @@ let vistaActual = 'grid'; // 'grid' o 'list'
 
 // Cargar datos al iniciar
 document.addEventListener('DOMContentLoaded', async () => {
-    await cargarCategorias();
-    await cargarTodosLosEventos();
-    aplicarFiltros();
+    console.log('🚀 Iniciando carga de página...');
+    try {
+        await cargarCategorias();
+        await cargarTodosLosEventos();
+        aplicarFiltros();
+    } catch (error) {
+        console.error('❌ Error en carga inicial:', error);
+    }
 });
 
 // Cargar todas las categorías
 async function cargarCategorias() {
     try {
+        console.log('📂 Cargando categorías...');
         categorias = await CategoriaAPI.listar();
-        const selectCategoria = document.getElementById('categoriaFilter');
-        // No limpiar el HTML porque ya tiene "Todas las categorías" por defecto
+        console.log('✅ Categorías cargadas:', categorias.length);
         
+        const selectCategoria = document.getElementById('categoriaFilter');
+        if (!selectCategoria) {
+            console.error('❌ No se encontró el elemento categoriaFilter');
+            return;
+        }
+        
+        // No limpiar el HTML porque ya tiene "Todas las categorías" por defecto
         categorias.forEach(cat => {
             const option = document.createElement('option');
             option.value = cat.id;
             option.textContent = `${cat.icono} ${cat.nombre}`;
             selectCategoria.appendChild(option);
         });
+        
+        console.log('✅ Categorías agregadas al selector');
     } catch (error) {
-        console.error('Error al cargar categorías:', error);
+        console.error('❌ Error al cargar categorías:', error);
     }
 }
 
@@ -33,11 +47,15 @@ async function cargarCategorias() {
 async function cargarTodosLosEventos() {
     mostrarSpinner(true);
     try {
+        console.log('📅 Cargando eventos...');
         todosLosEventos = await EventoAPI.listar();
         eventosFiltrados = [...todosLosEventos];
-        actualizarEstadisticas(); // Actualizar estadísticas DESPUÉS de cargar eventos
+        console.log('✅ Eventos cargados:', todosLosEventos.length);
+        actualizarEstadisticas();
     } catch (error) {
-        console.error('Error al cargar eventos:', error);
+        console.error('❌ Error al cargar eventos:', error);
+        todosLosEventos = [];
+        eventosFiltrados = [];
     } finally {
         mostrarSpinner(false);
     }
@@ -171,74 +189,56 @@ function crearTarjetaGrid(evento) {
     const imagenUrl = evento.imagenUrl || `https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=250&fit=crop&q=80`;
     const disponibles = evento.capacidad - evento.entradasVendidas;
     const porcentajeVendido = Math.round((evento.entradasVendidas / evento.capacidad) * 100);
-    const fechaEvento = new Date(evento.fechaEvento);
-    const ahora = new Date();
-    const esProximo = fechaEvento > ahora;
-    
-    // Badge de estado
-    let estadoBadge = '';
-    if (!esProximo) {
-        estadoBadge = '<span class="badge bg-secondary position-absolute top-0 end-0 m-2">Finalizado</span>';
-    } else if (disponibles === 0) {
-        estadoBadge = '<span class="badge bg-danger position-absolute top-0 end-0 m-2">Agotado</span>';
-    } else if (disponibles <= 10) {
-        estadoBadge = '<span class="badge bg-warning position-absolute top-0 end-0 m-2">¡Últimas entradas!</span>';
-    }
     
     return `
         <div class="col-lg-4 col-md-6">
-            <div class="card h-100 shadow-hover border-0 evento-card" style="transition: transform 0.3s, box-shadow 0.3s;">
-                <div class="position-relative overflow-hidden">
-                    <img src="${imagenUrl}" class="card-img-top" alt="${evento.titulo}" 
-                         style="height: 220px; object-fit: cover; transition: transform 0.3s;"
-                         onmouseover="this.style.transform='scale(1.1)'"
-                         onmouseout="this.style.transform='scale(1)'">
-                    ${estadoBadge}
-                    <div class="position-absolute bottom-0 start-0 m-2">
-                        <span class="badge" style="background-color: #3498db;">
+                <div class="card h-100 border-0 shadow-sm">
+                <img src="${imagenUrl}" class="card-img-top" alt="${evento.titulo}" 
+                     style="height: 200px; object-fit: cover;">
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="mb-2">
+                        <span class="badge text-white px-3 py-2" style="background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);">
                             ${evento.categoria.icono} ${evento.categoria.nombre}
                         </span>
                     </div>
-                </div>
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title fw-bold mb-2" style="color: #1a2332;">${evento.titulo}</h5>
-                    <p class="card-text text-muted small flex-grow-1" style="min-height: 60px;">
-                        ${evento.descripcion ? evento.descripcion.substring(0, 120) + '...' : 'Sin descripción'}
+                    
+                    <h5 class="card-title fw-bold mb-3" style="color: #2d3748; font-size: 1.25rem;">
+                        ${evento.titulo}
+                    </h5>
+                    
+                    <p class="card-text text-muted mb-4" style="font-size: 0.9rem; line-height: 1.6;">
+                        ${evento.descripcion ? evento.descripcion.substring(0, 100) + '...' : 'Sin descripción disponible'}
                     </p>
                     
-                    <div class="mb-2">
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-calendar3 me-2" style="color: #3498db;"></i>
-                            <small class="text-muted">${formatearFechaCompleta(evento.fechaEvento)}</small>
+                    <div class="mt-auto">
+                        <div class="d-flex align-items-center mb-2 text-muted" style="font-size: 0.875rem;">
+                            <i class="bi bi-calendar-event me-2 text-primary"></i>
+                            <span>${formatearFechaCorta(evento.fechaEvento)}</span>
                         </div>
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-geo-alt me-2" style="color: #3498db;"></i>
-                            <small class="text-muted">${evento.lugar}</small>
+                        
+                        <div class="d-flex align-items-center mb-3 text-muted" style="font-size: 0.875rem;">
+                            <i class="bi bi-geo-alt me-2 text-primary"></i>
+                            <span>${evento.lugar}</span>
                         </div>
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-person me-2" style="color: #3498db;"></i>
-                            <small class="text-muted">${evento.organizador.nombre || evento.organizador.username}</small>
+                        
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                            <div>
+                                <span class="fw-bold text-success" style="font-size: 1.5rem;">
+                                    ${formatearPrecio(evento.precio)}
+                                </span>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted d-block">Disponibles</small>
+                                <span class="fw-bold text-primary">${disponibles}/${evento.capacidad}</span>
+                            </div>
                         </div>
+                        
+                                <a href="evento-detalle.html?id=${evento.id}" 
+                                    class="btn w-100 mt-3 text-white fw-semibold" 
+                                    style="background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%); border: none; padding: 12px;">
+                            Ver Detalles
+                        </a>
                     </div>
-                    
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge bg-success fs-6 px-3 py-2">${formatearPrecio(evento.precio)}</span>
-                        <small class="text-muted">
-                            <i class="bi bi-people-fill"></i> ${disponibles}/${evento.capacidad}
-                        </small>
-                    </div>
-                    
-                    <div class="progress mb-3" style="height: 8px; background-color: #e9ecef;">
-                        <div class="progress-bar" role="progressbar" 
-                             style="width: ${porcentajeVendido}%; background: linear-gradient(90deg, #3498db 0%, #2c3e50 100%);"
-                             title="${porcentajeVendido}% vendido"></div>
-                    </div>
-                </div>
-                <div class="card-footer bg-white border-0 pt-0">
-                    <a href="evento-detalle.html?id=${evento.id}" class="btn w-100 text-white" 
-                       style="background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%); border: none;">
-                        <i class="bi bi-eye"></i> Ver Detalles
-                    </a>
                 </div>
             </div>
         </div>
@@ -249,42 +249,46 @@ function crearTarjetaGrid(evento) {
 function crearTarjetaLista(evento) {
     const imagenUrl = evento.imagenUrl || `https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=200&h=150&fit=crop&q=80`;
     const disponibles = evento.capacidad - evento.entradasVendidas;
-    const porcentajeVendido = Math.round((evento.entradasVendidas / evento.capacidad) * 100);
     
     return `
         <div class="col-12">
-            <div class="card border-0 shadow-sm mb-2" style="transition: transform 0.2s;">
-                <div class="card-body">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body p-3">
                     <div class="row align-items-center">
-                        <div class="col-md-2">
+                        <div class="col-md-2 col-sm-3">
                             <img src="${imagenUrl}" class="img-fluid rounded" alt="${evento.titulo}" 
-                                 style="height: 120px; width: 100%; object-fit: cover;">
+                                 style="height: 100px; width: 100%; object-fit: cover;">
                         </div>
-                        <div class="col-md-5">
-                            <span class="badge mb-2" style="background-color: #3498db;">
+                        <div class="col-md-6 col-sm-9 mt-3 mt-sm-0">
+                            <span class="badge mb-2 text-white" style="background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);">
                                 ${evento.categoria.icono} ${evento.categoria.nombre}
                             </span>
-                            <h5 class="mb-2 fw-bold">${evento.titulo}</h5>
-                            <p class="text-muted small mb-2">${evento.descripcion ? evento.descripcion.substring(0, 100) + '...' : ''}</p>
-                            <div class="d-flex gap-3">
-                                <small><i class="bi bi-calendar3 text-primary"></i> ${formatearFechaCompleta(evento.fechaEvento)}</small>
-                                <small><i class="bi bi-geo-alt text-primary"></i> ${evento.lugar}</small>
+                            <h5 class="mb-2 fw-bold" style="color: #2d3748;">${evento.titulo}</h5>
+                            <p class="text-muted mb-2" style="font-size: 0.875rem;">
+                                ${evento.descripcion ? evento.descripcion.substring(0, 120) + '...' : 'Sin descripción'}
+                            </p>
+                            <div class="d-flex gap-3 flex-wrap">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar-event text-primary"></i> ${formatearFechaCorta(evento.fechaEvento)}
+                                </small>
+                                <small class="text-muted">
+                                    <i class="bi bi-geo-alt text-primary"></i> ${evento.lugar}
+                                </small>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2 col-6 mt-3 mt-md-0 text-center">
                             <div class="mb-2">
-                                <strong class="text-success fs-5">${formatearPrecio(evento.precio)}</strong>
+                                <strong class="text-success" style="font-size: 1.5rem;">${formatearPrecio(evento.precio)}</strong>
                             </div>
-                            <div class="progress mb-2" style="height: 6px;">
-                                <div class="progress-bar bg-primary" style="width: ${porcentajeVendido}%"></div>
-                            </div>
-                            <small class="text-muted">
-                                <i class="bi bi-people-fill"></i> ${disponibles} de ${evento.capacidad} disponibles
+                            <small class="text-muted d-block">
+                                <i class="bi bi-people-fill"></i> ${disponibles} disponibles
                             </small>
                         </div>
-                        <div class="col-md-2 text-end">
-                            <a href="evento-detalle.html?id=${evento.id}" class="btn btn-primary">
-                                Ver Detalles <i class="bi bi-arrow-right"></i>
+                        <div class="col-md-2 col-6 mt-3 mt-md-0 text-center">
+                                     <a href="evento-detalle.html?id=${evento.id}" 
+                                         class="btn text-white fw-semibold" 
+                                         style="background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%); border: none; width: 100%;">
+                                Ver Detalles
                             </a>
                         </div>
                     </div>
@@ -308,33 +312,49 @@ function formatearFechaCompleta(fecha) {
     return f.toLocaleDateString('es-ES', opciones);
 }
 
+// Formatear fecha corta
+function formatearFechaCorta(fecha) {
+    const f = new Date(fecha);
+    const opciones = { 
+        month: 'short', 
+        day: 'numeric',
+        year: 'numeric'
+    };
+    return f.toLocaleDateString('es-ES', opciones);
+}
+
 // Formatear precio
 function formatearPrecio(precio) {
     if (precio === 0) return 'GRATIS';
     return `$${precio.toFixed(2)}`;
 }
 
-// Actualizar estadísticas
+// Actualizar estadísticas (versión compacta)
 function actualizarEstadisticas() {
-    const totalEventos = todosLosEventos.length;
-    const totalCategorias = categorias.length;
-    
-    // Eventos del mes actual
-    const ahora = new Date();
-    const eventosMesActual = todosLosEventos.filter(e => {
-        const fechaEvento = new Date(e.fechaEvento);
-        return fechaEvento.getMonth() === ahora.getMonth() && 
-               fechaEvento.getFullYear() === ahora.getFullYear();
-    }).length;
-    
-    document.getElementById('totalEventos').textContent = totalEventos;
-    document.getElementById('totalCategorias').textContent = totalCategorias;
-    document.getElementById('eventosMesActual').textContent = eventosMesActual;
+    try {
+        const totalEventos = todosLosEventos.length;
+        const totalCategorias = categorias.length;
+        
+        const elem1 = document.getElementById('totalEventos');
+        const elem2 = document.getElementById('totalCategorias');
+        
+        if (elem1) elem1.textContent = totalEventos;
+        if (elem2) elem2.textContent = totalCategorias;
+    } catch (error) {
+        console.error('❌ Error al actualizar estadísticas:', error);
+    }
 }
 
 // Actualizar contador de eventos mostrados
 function actualizarContadorFiltrados() {
-    document.getElementById('eventosMostrados').textContent = eventosFiltrados.length;
+    try {
+        const elem = document.getElementById('eventosMostrados');
+        if (elem) {
+            elem.textContent = eventosFiltrados.length;
+        }
+    } catch (error) {
+        console.error('❌ Error al actualizar contador:', error);
+    }
 }
 
 // Mostrar/ocultar spinner
@@ -351,19 +371,23 @@ function mostrarSpinner(mostrar) {
     }
 }
 
-// CSS hover effect
+// CSS para las tarjetas (estáticas, paleta azul sutil)
 const style = document.createElement('style');
 style.textContent = `
-    .shadow-hover:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
-    }
-    .evento-card {
-        border-radius: 12px;
+    .card {
+        border-radius: 10px;
         overflow: hidden;
+        box-shadow: 0 6px 18px rgba(44,62,80,0.06) !important;
     }
-    .backdrop-blur {
-        backdrop-filter: blur(10px);
+
+    /* Evitar transform en hover para mantener tarjetas estáticas */
+    .card:hover {
+        transform: none !important;
+        box-shadow: 0 6px 18px rgba(44,62,80,0.06) !important;
+    }
+
+    .card img {
+        transition: none;
     }
 `;
 document.head.appendChild(style);

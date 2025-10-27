@@ -145,34 +145,22 @@
         </div>
     </section>
 
-    <!-- Estadísticas Rápidas -->
-    <section class="py-4 bg-white">
+    <!-- Estadísticas compactas -->
+    <section class="py-2 bg-light border-bottom">
         <div class="container">
-            <div class="row text-center g-4">
-                <div class="col-md-3 col-6">
-                    <div class="p-3">
-                        <h3 class="display-6 text-primary mb-0" id="totalEventos">0</h3>
-                        <small class="text-muted">Eventos Disponibles</small>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="p-3">
-                        <h3 class="display-6 text-success mb-0" id="totalCategorias">0</h3>
-                        <small class="text-muted">Categorías</small>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="p-3">
-                        <h3 class="display-6 text-warning mb-0" id="eventosMesActual">0</h3>
-                        <small class="text-muted">Este Mes</small>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="p-3">
-                        <h3 class="display-6 text-info mb-0" id="eventosMostrados">0</h3>
-                        <small class="text-muted">Mostrando</small>
-                    </div>
-                </div>
+            <div class="d-flex justify-content-center gap-4 flex-wrap">
+                <small class="text-muted">
+                    <i class="bi bi-calendar-check text-primary"></i> 
+                    <strong id="totalEventos">0</strong> eventos disponibles
+                </small>
+                <small class="text-muted">
+                    <i class="bi bi-tag text-success"></i> 
+                    <strong id="totalCategorias">0</strong> categorías
+                </small>
+                <small class="text-muted">
+                    <i class="bi bi-eye text-info"></i> 
+                    Mostrando <strong id="eventosMostrados">0</strong>
+                </small>
             </div>
         </div>
     </section>
