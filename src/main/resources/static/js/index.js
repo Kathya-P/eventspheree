@@ -3,10 +3,19 @@ let todosLosEventos = [];
 let eventosFiltrados = [];
 let categorias = [];
 let vistaActual = 'grid'; // 'grid' o 'list'
+let isUsuarioLogueado = false;
 
 // Cargar datos al iniciar
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Iniciando carga de página...');
+    
+    // Verificar si el usuario está logueado
+    const usuario = Utils.obtenerUsuarioLocal();
+    isUsuarioLogueado = !!usuario;
+    
+    // Mostrar/ocultar elementos según autenticación
+    mostrarElementosSegunAutenticacion();
+    
     try {
         await cargarCategorias();
         await cargarTodosLosEventos();
@@ -15,6 +24,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('❌ Error en carga inicial:', error);
     }
 });
+
+// Mostrar/ocultar elementos según autenticación
+function mostrarElementosSegunAutenticacion() {
+    if (!isUsuarioLogueado) {
+        // Usuario NO logueado - Mostrar elementos de promoción
+        document.getElementById('heroButtons')?.classList.remove('d-none');
+        document.getElementById('benefitsSection')?.classList.remove('d-none');
+        document.getElementById('registerBanner')?.classList.remove('d-none');
+        document.getElementById('eventosSubtitle')?.classList.remove('d-none');
+        
+        // Cambiar título
+        const title = document.getElementById('eventosTitle');
+        if (title) title.textContent = 'Vista Previa de Eventos';
+    } else {
+        // Usuario logueado - Ocultar elementos de promoción
+        document.getElementById('heroButtons')?.classList.add('d-none');
+        document.getElementById('benefitsSection')?.classList.add('d-none');
+        document.getElementById('registerBanner')?.classList.add('d-none');
+        document.getElementById('eventosSubtitle')?.classList.add('d-none');
+    }
+}
 
 // Cargar todas las categorías
 async function cargarCategorias() {
@@ -164,10 +194,17 @@ function mostrarEventos(eventos) {
     
     console.log('mostrarEventos llamado con', eventos.length, 'eventos');
     
+    // Limitar a 6 eventos si el usuario NO está logueado
+    let eventosAMostrar = eventos;
+    if (!isUsuarioLogueado && eventos.length > 6) {
+        eventosAMostrar = eventos.slice(0, 6);
+        console.log('👁️ Usuario no logueado - Limitando a 6 eventos');
+    }
+    
     // Asegurarse de que el container siempre esté visible
     container.classList.remove('d-none');
     
-    if (!eventos || eventos.length === 0) {
+    if (!eventosAMostrar || eventosAMostrar.length === 0) {
         container.innerHTML = '';
         noEventosMsg.classList.remove('d-none');
         return;
@@ -177,10 +214,31 @@ function mostrarEventos(eventos) {
     
     if (vistaActual === 'grid') {
         container.className = 'row g-4';
-        container.innerHTML = eventos.map(e => crearTarjetaGrid(e)).join('');
+        container.innerHTML = eventosAMostrar.map(e => crearTarjetaGrid(e)).join('');
     } else {
         container.className = 'row g-3';
-        container.innerHTML = eventos.map(e => crearTarjetaLista(e)).join('');
+        container.innerHTML = eventosAMostrar.map(e => crearTarjetaLista(e)).join('');
+    }
+    
+    // Agregar mensaje de "más eventos disponibles" si está limitado
+    if (!isUsuarioLogueado && eventos.length > 6) {
+        container.insertAdjacentHTML('beforeend', `
+            <div class="col-12 text-center mt-4">
+                <div class="card border-2 border-primary bg-light">
+                    <div class="card-body py-5">
+                        <i class="bi bi-lock-fill display-4 text-primary mb-3"></i>
+                        <h4 class="mb-3">¡Hay ${eventos.length - 6} eventos más disponibles!</h4>
+                        <p class="text-muted mb-4">Regístrate gratis para ver todos los eventos y comprar boletos</p>
+                        <a href="registro.html" class="btn btn-primary btn-lg me-2">
+                            <i class="bi bi-person-plus"></i> Registrarse Gratis
+                        </a>
+                        <a href="login.html" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `);
     }
 }
 
@@ -350,7 +408,12 @@ function actualizarContadorFiltrados() {
     try {
         const elem = document.getElementById('eventosMostrados');
         if (elem) {
-            elem.textContent = eventosFiltrados.length;
+            // Si el usuario no está logueado y hay más de 6, mostrar "6 de X"
+            if (!isUsuarioLogueado && eventosFiltrados.length > 6) {
+                elem.textContent = `6 de ${eventosFiltrados.length}`;
+            } else {
+                elem.textContent = eventosFiltrados.length;
+            }
         }
     } catch (error) {
         console.error('❌ Error al actualizar contador:', error);

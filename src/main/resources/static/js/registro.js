@@ -1,3 +1,6 @@
+// Redirigir si ya está logueado
+Utils.redirigirSiLogueado();
+
 // Manejo del formulario de registro
 document.getElementById('registroForm').addEventListener('submit', async (e) => {
     e.preventDefault();

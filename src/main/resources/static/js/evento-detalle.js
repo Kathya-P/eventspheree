@@ -53,17 +53,16 @@ function mostrarEvento(evento) {
 }
 
 // Abrir modal de compra cuando se abre
-document.getElementById('compraModal')?.addEventListener('show.bs.modal', function() {
-    const usuario = Utils.obtenerUsuarioLocal();
-    
-    if (!usuario) {
-        alert('Debes iniciar sesión para comprar boletos');
-        window.location.href = 'login.html';
+document.getElementById('compraModal')?.addEventListener('show.bs.modal', function(event) {
+    // Verificar autenticación
+    if (!Utils.requiereAutenticacion('Debes iniciar sesión para comprar boletos')) {
+        event.preventDefault();
         return;
     }
     
     if (!eventoActual) {
         alert('Error: No se ha cargado el evento');
+        event.preventDefault();
         return;
     }
     
@@ -71,7 +70,7 @@ document.getElementById('compraModal')?.addEventListener('show.bs.modal', functi
     
     if (disponibles <= 0) {
         alert('Lo sentimos, este evento está agotado');
-        bootstrap.Modal.getInstance(this).hide();
+        event.preventDefault();
         return;
     }
     
@@ -115,6 +114,11 @@ function actualizarTotal() {
 
 // Confirmar compra de boletos
 async function confirmarCompra() {
+    // Verificar autenticación
+    if (!Utils.requiereAutenticacion('Debes iniciar sesión para comprar boletos')) {
+        return;
+    }
+    
     const usuario = Utils.obtenerUsuarioLocal();
     const cantidad = parseInt(document.getElementById('cantidadBoletos').value);
     const disponibles = eventoActual.capacidad - eventoActual.entradasVendidas;
@@ -257,13 +261,12 @@ function mostrarResenas(resenas) {
 document.getElementById('resenaForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const usuario = Utils.obtenerUsuarioLocal();
-    if (!usuario) {
-        alert('Debes iniciar sesión para dejar una reseña');
-        window.location.href = 'login.html';
+    // Verificar autenticación
+    if (!Utils.requiereAutenticacion('Debes iniciar sesión para dejar una reseña')) {
         return;
     }
     
+    const usuario = Utils.obtenerUsuarioLocal();
     const calificacion = document.querySelector('input[name="calificacion"]:checked')?.value;
     const comentario = document.getElementById('comentarioResena').value.trim();
     
@@ -344,13 +347,12 @@ function mostrarMensajes(mensajes) {
 document.getElementById('chatForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const usuario = Utils.obtenerUsuarioLocal();
-    if (!usuario) {
-        alert('Debes iniciar sesión para enviar mensajes');
-        window.location.href = 'login.html';
+    // Verificar autenticación
+    if (!Utils.requiereAutenticacion('Debes iniciar sesión para enviar mensajes')) {
         return;
     }
     
+    const usuario = Utils.obtenerUsuarioLocal();
     const contenido = document.getElementById('mensajeTexto').value.trim();
     
     if (!contenido) {
@@ -410,13 +412,12 @@ document.getElementById('imagenFoto').addEventListener('change', function(e) {
 document.getElementById('fotoForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const usuario = Utils.obtenerUsuarioLocal();
-    if (!usuario) {
-        alert('Debes iniciar sesión para subir fotos');
-        window.location.href = 'login.html';
+    // Verificar autenticación
+    if (!Utils.requiereAutenticacion('Debes iniciar sesión para subir fotos')) {
         return;
     }
     
+    const usuario = Utils.obtenerUsuarioLocal();
     const imagenInput = document.getElementById('imagenFoto');
     const descripcion = document.getElementById('descripcionFoto').value;
     
@@ -519,6 +520,11 @@ function verFotoModal(id, url, descripcion, username, fecha, esMia) {
 
 // Eliminar foto
 async function eliminarFoto(id) {
+    // Verificar autenticación
+    if (!Utils.requiereAutenticacion('Debes iniciar sesión para eliminar fotos')) {
+        return;
+    }
+    
     if (!confirm('¿Estás seguro de que deseas eliminar esta foto?')) {
         return;
     }

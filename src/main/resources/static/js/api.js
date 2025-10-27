@@ -325,8 +325,37 @@ const Utils = {
     verificarSesion: () => {
         const usuario = Utils.obtenerUsuarioLocal();
         if (!usuario) {
+            // Guardar la página a la que intentaba acceder
+            localStorage.setItem('paginaAnterior', window.location.href);
             window.location.href = 'login.html';
+            return null;
         }
         return usuario;
+    },
+    
+    verificarSesionSilencioso: () => {
+        // Verifica sesión sin redirigir
+        return Utils.obtenerUsuarioLocal();
+    },
+    
+    redirigirSiLogueado: () => {
+        // Para páginas de login/registro
+        const usuario = Utils.obtenerUsuarioLocal();
+        if (usuario) {
+            const paginaAnterior = localStorage.getItem('paginaAnterior');
+            localStorage.removeItem('paginaAnterior');
+            window.location.href = paginaAnterior || 'index.html';
+        }
+    },
+    
+    requiereAutenticacion: (mensaje = 'Debes iniciar sesión para acceder a esta función') => {
+        const usuario = Utils.obtenerUsuarioLocal();
+        if (!usuario) {
+            alert(mensaje);
+            localStorage.setItem('paginaAnterior', window.location.href);
+            window.location.href = 'login.html';
+            return false;
+        }
+        return true;
     }
 };

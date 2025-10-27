@@ -41,15 +41,34 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero-section text-white py-5" style="background: linear-gradient(135deg, #1a2332 0%, #2c3e50 50%, #3498db 100%); min-height: 400px; display: flex; align-items: center;">
-        <div class="container">
+    <section class="hero-section text-white py-5" style="background: linear-gradient(135deg, #1a2332 0%, #2c3e50 50%, #3498db 100%); min-height: 500px; display: flex; align-items: center; position: relative; overflow: hidden;">
+        <!-- Decorative elements -->
+        <div style="position: absolute; top: -50px; right: -50px; width: 300px; height: 300px; background: rgba(52, 152, 219, 0.1); border-radius: 50%; filter: blur(60px);"></div>
+        <div style="position: absolute; bottom: -50px; left: -50px; width: 400px; height: 400px; background: rgba(44, 62, 80, 0.2); border-radius: 50%; filter: blur(80px);"></div>
+        
+        <div class="container position-relative">
             <div class="row align-items-center">
                 <div class="col-lg-6 text-center text-lg-start mb-4 mb-lg-0">
-                    <h1 class="display-3 fw-bold mb-3 animate__animated animate__fadeInDown">
+                    <h1 class="display-2 fw-bold mb-3" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
                         <i class="bi bi-stars text-warning"></i> EventSphere
                     </h1>
-                    <p class="lead mb-4 fs-4">Descubre, conecta y vive experiencias inolvidables</p>
-                    <div class="d-flex gap-3 justify-content-center justify-content-lg-start">
+                    <p class="lead mb-4 fs-4" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
+                        Descubre, conecta y vive experiencias inolvidables
+                    </p>
+                    
+                    <!-- CTA Buttons para usuarios no logueados -->
+                    <div id="heroButtons" class="d-none">
+                        <div class="d-flex gap-3 justify-content-center justify-content-lg-start mb-4">
+                            <a href="registro.html" class="btn btn-warning btn-lg px-4 shadow">
+                                <i class="bi bi-person-plus"></i> Únete Gratis
+                            </a>
+                            <a href="login.html" class="btn btn-outline-light btn-lg px-4">
+                                <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap">
                         <span class="badge bg-light text-dark px-3 py-2 fs-6">
                             <i class="bi bi-music-note-beamed"></i> Conciertos
                         </span>
@@ -59,12 +78,15 @@
                         <span class="badge bg-light text-dark px-3 py-2 fs-6">
                             <i class="bi bi-mortarboard"></i> Conferencias
                         </span>
+                        <span class="badge bg-light text-dark px-3 py-2 fs-6">
+                            <i class="bi bi-palette"></i> Arte
+                        </span>
                     </div>
                 </div>
                 <div class="col-lg-6">
-                    <div class="card shadow-lg border-0 bg-white bg-opacity-10 backdrop-blur">
+                    <div class="card shadow-lg border-0 bg-white bg-opacity-10 backdrop-blur" style="backdrop-filter: blur(10px);">
                         <div class="card-body p-4">
-                            <h5 class="text-white mb-3"><i class="bi bi-search"></i> Busca tu próximo evento</h5>
+                            <h5 class="text-white mb-3"><i class="bi bi-search"></i> Explora eventos destacados</h5>
                             
                             <!-- Buscador Principal -->
                             <div class="input-group mb-3 shadow-sm">
@@ -145,6 +167,69 @@
         </div>
     </section>
 
+    <!-- Sección de Beneficios (solo visible para usuarios NO logueados) -->
+    <section id="benefitsSection" class="py-5 bg-white d-none">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold mb-3">
+                    <i class="bi bi-gift text-warning"></i> ¿Por qué unirte a EventSphere?
+                </h2>
+                <p class="text-muted lead">Crea tu cuenta gratis y desbloquea todas las funciones</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="text-center p-4 h-100 border rounded-3 hover-lift">
+                        <div class="display-4 text-primary mb-3">
+                            <i class="bi bi-ticket-perforated"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Compra Boletos</h5>
+                        <p class="text-muted small mb-0">Accede a eventos exclusivos con tickets digitales y códigos QR</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="text-center p-4 h-100 border rounded-3 hover-lift">
+                        <div class="display-4 text-success mb-3">
+                            <i class="bi bi-calendar-plus"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Crea Eventos</h5>
+                        <p class="text-muted small mb-0">Organiza tus propios eventos y gestiona asistentes fácilmente</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="text-center p-4 h-100 border rounded-3 hover-lift">
+                        <div class="display-4 text-info mb-3">
+                            <i class="bi bi-chat-dots"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Interactúa</h5>
+                        <p class="text-muted small mb-0">Chatea con otros asistentes y comparte fotos de los eventos</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="text-center p-4 h-100 border rounded-3 hover-lift">
+                        <div class="display-4 text-warning mb-3">
+                            <i class="bi bi-qr-code-scan"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Valida Entradas</h5>
+                        <p class="text-muted small mb-0">Escanea códigos QR en tiempo real para validar asistencia</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-5">
+                <a href="registro.html" class="btn btn-primary btn-lg px-5 shadow">
+                    <i class="bi bi-rocket-takeoff"></i> Comenzar Ahora - Es Gratis
+                </a>
+                <p class="text-muted small mt-3 mb-0">
+                    ¿Ya tienes cuenta? <a href="login.html" class="text-decoration-none fw-bold">Inicia sesión aquí</a>
+                </p>
+            </div>
+        </div>
+    </section>
+
     <!-- Estadísticas compactas -->
     <section class="py-2 bg-light border-bottom">
         <div class="container">
@@ -168,8 +253,28 @@
     <!-- Eventos Grid -->
     <section class="py-5 bg-light">
         <div class="container">
+            <!-- Banner de registro para usuarios no logueados -->
+            <div id="registerBanner" class="alert alert-info alert-dismissible fade show d-none mb-4" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-info-circle-fill fs-3 me-3"></i>
+                    <div class="flex-grow-1">
+                        <h6 class="alert-heading mb-1">👋 Estás viendo una vista previa limitada</h6>
+                        <p class="mb-0 small">
+                            <strong>Regístrate gratis</strong> para ver todos los eventos, comprar boletos y crear tus propios eventos.
+                        </p>
+                    </div>
+                    <a href="registro.html" class="btn btn-primary btn-sm ms-3">
+                        <i class="bi bi-person-plus"></i> Registrarse
+                    </a>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0"><i class="bi bi-calendar-event"></i> Eventos Disponibles</h2>
+                <div>
+                    <h2 class="mb-0"><i class="bi bi-calendar-event"></i> <span id="eventosTitle">Eventos Disponibles</span></h2>
+                    <p id="eventosSubtitle" class="text-muted small mb-0 d-none">Vista previa - Únete para ver más</p>
+                </div>
                 <div class="dropdown">
                     <button class="btn btn-outline-primary dropdown-toggle" type="button" id="vistaDropdown" data-bs-toggle="dropdown">
                         <i class="bi bi-grid-3x3-gap"></i> Vista

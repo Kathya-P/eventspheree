@@ -1,3 +1,6 @@
+// Redirigir si ya está logueado
+Utils.redirigirSiLogueado();
+
 // Manejo del formulario de login
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
