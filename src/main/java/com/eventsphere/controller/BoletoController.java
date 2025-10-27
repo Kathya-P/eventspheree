@@ -3,13 +3,17 @@ package com.eventsphere.controller;
 import com.eventsphere.model.Boleto;
 import com.eventsphere.model.Evento;
 import com.eventsphere.model.Usuario;
+import com.eventsphere.model.ValidacionQR;
 import com.eventsphere.service.BoletoService;
 import com.eventsphere.repository.EventoRepository;
 import com.eventsphere.repository.UsuarioRepository;
+import com.eventsphere.repository.ValidacionQRRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -28,6 +32,9 @@ public class BoletoController {
     
     @Autowired
     private com.eventsphere.service.QRService qrService;
+    
+    @Autowired
+    private ValidacionQRRepository validacionQRRepository;
     
     @PostMapping("/comprar")
     public ResponseEntity<?> comprarBoleto(
@@ -161,6 +168,48 @@ public class BoletoController {
                 put("success", false);
                 put("mensaje", e.getMessage());
             }});
+        }
+    }
+    
+    /**
+     * Obtener historial de validaciones de un usuario
+     */
+    @GetMapping("/validaciones/historial/{usuarioId}")
+    public ResponseEntity<?> obtenerHistorialValidaciones(@PathVariable Long usuarioId) {
+        try {
+            Usuario usuario = usuarioRepository.findById(usuarioId)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            
+            List<ValidacionQR> validaciones = validacionQRRepository
+                    .findTop10ByValidadorOrderByFechaValidacionDesc(usuario);
+            
+            return ResponseEntity.ok(validaciones);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    /**
+     * Obtener estadísticas de validaciones de hoy
+     */
+    @GetMapping("/validaciones/estadisticas/{usuarioId}")
+    public ResponseEntity<?> obtenerEstadisticasHoy(@PathVariable Long usuarioId) {
+        try {
+            Usuario usuario = usuarioRepository.findById(usuarioId)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            
+            LocalDateTime inicioDia = LocalDate.now().atStartOfDay();
+            
+            Long exitosas = validacionQRRepository.contarExitosasHoy(usuario, inicioDia);
+            Long rechazadas = validacionQRRepository.contarRechazadasHoy(usuario, inicioDia);
+            
+            return ResponseEntity.ok(new java.util.HashMap<String, Object>() {{
+                put("exitosas", exitosas);
+                put("rechazadas", rechazadas);
+                put("total", exitosas + rechazadas);
+            }});
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }

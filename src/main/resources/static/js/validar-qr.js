@@ -12,6 +12,7 @@ let historial = [];
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('organizadorNombre').textContent = usuario.nombre || usuario.username;
     cargarEstadisticas();
+    cargarHistorial();
 });
 
 // Botones de cámara
@@ -148,9 +149,12 @@ async function validarQRCodigo(codigoQR) {
                 tipo: 'success',
                 mensaje: data.mensaje,
                 evento: data.evento,
-                usuario: data.usuario,
+                usuario: data.usuario || data.boleto?.usuario?.nombre || 'Usuario',
                 fecha: new Date()
             });
+            
+            // Recargar estadísticas desde el servidor
+            setTimeout(() => cargarEstadisticas(), 500);
             
             resultadoDiv.innerHTML = `
                 <div class="alert alert-success alert-dismissible fade show">
@@ -186,8 +190,13 @@ async function validarQRCodigo(codigoQR) {
             agregarAlHistorial({
                 tipo: 'error',
                 mensaje: data.mensaje,
+                usuario: 'Error de validación',
+                evento: codigoQR.substring(0, 20) + '...',
                 fecha: new Date()
             });
+            
+            // Recargar estadísticas desde el servidor
+            setTimeout(() => cargarEstadisticas(), 500);
             
             resultadoDiv.innerHTML = `
                 <div class="alert alert-danger alert-dismissible fade show">
@@ -240,34 +249,59 @@ function actualizarEstadisticas() {
 
 // Cargar estadísticas guardadas
 function cargarEstadisticas() {
-    // Aquí podrías cargar desde localStorage o hacer una llamada al backend
-    const hoy = new Date().toDateString();
-    const stats = JSON.parse(localStorage.getItem('qr_stats_' + usuario.id) || '{}');
-    
-    if (stats.fecha === hoy) {
-        validadosHoy = stats.validados || 0;
-        erroresHoy = stats.errores || 0;
-    }
-    
-    actualizarEstadisticas();
+    // Cargar desde el backend
+    fetch(`${API_BASE_URL}/boletos/validaciones/estadisticas/${usuario.id}`)
+        .then(response => response.json())
+        .then(data => {
+            validadosHoy = data.exitosas || 0;
+            erroresHoy = data.rechazadas || 0;
+            actualizarEstadisticas();
+        })
+        .catch(error => {
+            console.error('Error al cargar estadísticas:', error);
+            actualizarEstadisticas();
+        });
 }
 
-// Guardar estadísticas
+// Cargar historial desde el backend
+function cargarHistorial() {
+    fetch(`${API_BASE_URL}/boletos/validaciones/historial/${usuario.id}`)
+        .then(response => response.json())
+        .then(validaciones => {
+            historial = validaciones.map(v => ({
+                tipo: v.resultado === 'EXITOSO' ? 'success' : 'error',
+                mensaje: v.mensaje,
+                usuario: v.boleto?.usuario?.nombre || 'Desconocido',
+                evento: v.boleto?.evento?.titulo || 'Sin evento',
+                fecha: new Date(v.fechaValidacion)
+            }));
+            actualizarHistorialUI();
+        })
+        .catch(error => {
+            console.error('Error al cargar historial:', error);
+        });
+}
+
+// Guardar estadísticas (ya no es necesario, se guarda en BD)
 function guardarEstadisticas() {
-    const hoy = new Date().toDateString();
-    const stats = {
-        fecha: hoy,
-        validados: validadosHoy,
-        errores: erroresHoy
-    };
-    localStorage.setItem('qr_stats_' + usuario.id, JSON.stringify(stats));
+    // Ya no guardamos en localStorage, todo va a la BD
 }
 
-// Agregar al historial
+// Agregar al historial (actualizar UI y recargar desde BD)
 function agregarAlHistorial(item) {
-    historial.unshift(item); // Agregar al principio
-    if (historial.length > 10) historial.pop(); // Mantener solo 10
+    // Agregar temporalmente al historial local
+    historial.unshift(item);
+    if (historial.length > 10) historial.pop();
+    actualizarHistorialUI();
     
+    // Recargar desde el backend después de un momento
+    setTimeout(() => {
+        cargarHistorial();
+    }, 1000);
+}
+
+// Actualizar UI del historial
+function actualizarHistorialUI() {
     const historialDiv = document.getElementById('historialValidaciones');
     
     if (historial.length === 0) {
@@ -278,13 +312,15 @@ function agregarAlHistorial(item) {
     historialDiv.innerHTML = historial.map(h => {
         const iconClass = h.tipo === 'success' ? 'bi-check-circle-fill text-success' : 'bi-x-circle-fill text-danger';
         const badgeClass = h.tipo === 'success' ? 'bg-success' : 'bg-danger';
+        const nombreUsuario = h.usuario || 'Sin identificar';
+        const nombreEvento = h.evento || 'Sin evento';
         
         return `
             <div class="d-flex align-items-center border-bottom pb-2 mb-2">
                 <i class="bi ${iconClass} me-2" style="font-size: 1.5rem;"></i>
                 <div class="flex-grow-1">
-                    <strong>${h.usuario || 'Sin datos'}</strong>
-                    ${h.evento ? `<br><small class="text-muted">${h.evento}</small>` : ''}
+                    <strong>${nombreUsuario}</strong>
+                    <br><small class="text-muted">${nombreEvento}</small>
                     <br><small class="text-muted">${h.fecha.toLocaleTimeString()}</small>
                 </div>
                 <span class="badge ${badgeClass}">${h.tipo === 'success' ? 'Válido' : 'Rechazado'}</span>
