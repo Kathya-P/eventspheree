@@ -36,9 +36,10 @@ public class BoletoService {
             throw new RuntimeException("No hay entradas disponibles");
         }
         
-        if (boletoRepository.existsByUsuarioAndEvento(usuario, evento)) {
-            throw new RuntimeException("Ya tienes un boleto para este evento");
-        }
+        // Permitir múltiples boletos por usuario
+        // Comentado: if (boletoRepository.existsByUsuarioAndEvento(usuario, evento)) {
+        //     throw new RuntimeException("Ya tienes un boleto para este evento");
+        // }
         
         // Crear boleto
         Boleto boleto = new Boleto();
