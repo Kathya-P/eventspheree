@@ -127,8 +127,8 @@ public class PagoService {
             return false;
         }
         
-        // Simulación: 95% de éxito
-        return Math.random() > 0.05;
+        // Simulación: 100% de éxito para pruebas
+        return true;
     }
     
     /**
@@ -140,8 +140,8 @@ public class PagoService {
             return false;
         }
         
-        // Simulación: 98% de éxito
-        return Math.random() > 0.02;
+        // Simulación: 100% de éxito para pruebas
+        return true;
     }
     
     /**
