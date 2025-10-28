@@ -72,15 +72,16 @@ async function cargarBoletos() {
             const ahora = new Date();
             const esEventoPasado = fechaEvento < ahora;
             
-            // Imagen del evento o placeholder
-            const imagenEvento = evento.imagen || 'https://via.placeholder.com/400x250/2c3e50/ffffff?text=' + encodeURIComponent(evento.titulo);
+            // Imagen del evento o placeholder con gradiente
+            const imagenEvento = evento.imagenUrl || evento.imagen || `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232c3e50;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%2334495e;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23grad)' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial,sans-serif' font-size='24' font-weight='bold' fill='white' text-anchor='middle' dy='.3em'%3E${encodeURIComponent(evento.titulo)}%3C/text%3E%3C/svg%3E`;
             
             html += `
                 <div class="col-md-6 col-lg-4">
                     <div class="card h-100 border-0 shadow-sm hover-card">
                         <!-- Imagen del evento -->
                         <img src="${imagenEvento}" class="card-img-top" alt="${evento.titulo}" 
-                             style="height: 200px; object-fit: cover;">
+                             style="height: 200px; object-fit: cover;" 
+                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27400%27 height=%27250%27%3E%3Crect fill=%27%232c3e50%27 width=%27400%27 height=%27250%27/%3E%3Ctext x=%2750%25%27 y=%2750%25%27 font-family=%27Arial%27 font-size=%2720%27 fill=%27white%27 text-anchor=%27middle%27 dy=%27.3em%27%3EEvento%3C/text%3E%3C/svg%3E';">
                         
                         <!-- Badge de estado superpuesto -->
                         <span class="position-absolute top-0 end-0 m-3 badge ${esEventoPasado ? 'bg-secondary' : 'bg-success'} px-3 py-2">
