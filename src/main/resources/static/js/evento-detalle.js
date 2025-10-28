@@ -146,15 +146,57 @@ async function confirmarCompra() {
         return;
     }
     
-    // Cerrar modal de cantidad
-    const modalCantidad = bootstrap.Modal.getInstance(document.getElementById('compraModal'));
-    if (modalCantidad) {
-        modalCantidad.hide();
+    const total = eventoActual.precio * cantidad;
+    const confirmMsg = `¿Confirmar compra de ${cantidad} boleto(s)?\n\nTotal: ${Utils.formatearPrecio(total)}`;
+    
+    if (!confirm(confirmMsg)) {
+        return;
     }
     
-    // Abrir modal de pago
-    const modalPago = new ModalPago(eventoActual, usuario, cantidad);
-    modalPago.mostrar();
+    try {
+        // Deshabilitar botón para evitar doble click
+        const btnConfirmar = event.target;
+        btnConfirmar.disabled = true;
+        btnConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
+        
+        // Comprar boletos en una sola llamada
+        const response = await BoletoAPI.comprar(usuario.id, eventoActual.id, cantidad);
+        
+        if (response.ok) {
+            const resultado = await response.json();
+            
+            // Cerrar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('compraModal'));
+            modal.hide();
+            
+            // Mostrar mensaje de éxito
+            let mensaje;
+            if (cantidad === 1) {
+                mensaje = `¡Compra exitosa! 🎉\n\nCódigo QR: ${resultado.codigoQR}\n\nPuedes ver tu boleto en "Mi Perfil"`;
+            } else {
+                mensaje = `¡Compra exitosa! 🎉\n\nSe compraron ${cantidad} boletos.\n\nPuedes verlos en "Mi Perfil"`;
+            }
+            
+            alert(mensaje);
+            
+            // Recargar evento para actualizar disponibilidad
+            await cargarEvento();
+        } else {
+            const error = await response.text();
+            throw new Error(error);
+        }
+        
+    } catch (error) {
+        console.error('Error al comprar boletos:', error);
+        alert(`Error: ${error.message || 'Error de conexión. Intenta nuevamente.'}`);
+    } finally {
+        // Re-habilitar botón
+        const btnConfirmar = document.querySelector('#compraModal .btn-primary');
+        if (btnConfirmar) {
+            btnConfirmar.disabled = false;
+            btnConfirmar.innerHTML = '<i class="bi bi-cart-check"></i> Confirmar Compra';
+        }
+    }
 }
 
 // Cargar reseñas
@@ -269,33 +311,6 @@ document.getElementById('resenaForm')?.addEventListener('submit', async (e) => {
 });
 
 // Cargar mensajes del chat
-// ============================================
-// CHAT MEJORADO - INICIALIZACIÓN
-// ============================================
-
-// Inicializar chat mejorado cuando se muestra la pestaña
-document.getElementById('chat-tab')?.addEventListener('shown.bs.tab', async function () {
-    const usuario = Utils.obtenerUsuarioLocal();
-    
-    if (!usuario) {
-        document.getElementById('chatContainer').innerHTML = `
-            <div class="text-center py-5">
-                <i class="bi bi-lock" style="font-size: 48px;" class="text-muted"></i>
-                <p class="text-muted mt-3">Debes iniciar sesión para ver el chat</p>
-                <a href="login.html" class="btn btn-primary">Iniciar Sesión</a>
-            </div>
-        `;
-        return;
-    }
-    
-    // Inicializar chat solo una vez
-    if (!window.chat) {
-        window.chat = new ChatMejorado(eventoId, usuario);
-        await window.chat.inicializar();
-    }
-});
-
-/* CÓDIGO VIEJO COMENTADO - Se reemplaza con ChatMejorado
 async function cargarMensajes() {
     try {
         const mensajes = await MensajeAPI.listarPorEvento(eventoId);
@@ -377,7 +392,6 @@ document.getElementById('chatForm')?.addEventListener('submit', async (e) => {
         alert('Error de conexión. Intenta nuevamente.');
     }
 });
-*/
 
 // ==================== FUNCIONALIDAD DE FOTOS ====================
 

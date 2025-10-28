@@ -15,8 +15,8 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
     
-    // @Autowired
-    // private PasswordEncoder passwordEncoder;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     
     public Usuario crearUsuario(Usuario usuario) {
         if (usuarioRepository.existsByUsername(usuario.getUsername())) {
@@ -27,8 +27,7 @@ public class UsuarioService {
         }
         
         // Encriptar la contraseña
-        // usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
-        // Por ahora sin encriptación
+        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
         
         return usuarioRepository.save(usuario);
     }
@@ -63,9 +62,7 @@ public class UsuarioService {
         
         if (usuarioActualizado.getPassword() != null) {
             // Encriptar la nueva contraseña
-            // usuario.setPassword(passwordEncoder.encode(usuarioActualizado.getPassword()));
-            // Por ahora sin encriptación
-            usuario.setPassword(usuarioActualizado.getPassword());
+            usuario.setPassword(passwordEncoder.encode(usuarioActualizado.getPassword()));
         }
         
         if (usuarioActualizado.getRol() != null) {
