@@ -82,7 +82,7 @@ async function cargarBoletos() {
                                 </small>
                             </div>
                             <div class="col-md-4 text-end">
-                                <span class="badge ${esEventoPasado ? 'bg-secondary' : 'bg-success'} fs-6">
+                                <span class="badge ${esEventoPasado ? 'bg-light text-dark' : 'bg-white text-primary'} fs-6">
                                     ${esEventoPasado ? 'Evento Finalizado' : 'Evento Próximo'}
                                 </span>
                             </div>
@@ -98,9 +98,9 @@ async function cargarBoletos() {
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="p-2 bg-success bg-opacity-10 rounded text-center">
+                                <div class="p-2 bg-primary bg-opacity-10 rounded text-center">
                                     <small class="text-muted d-block">Activos</small>
-                                    <strong class="fs-5 text-success">${boletosActivos}</strong>
+                                    <strong class="fs-5 text-primary">${boletosActivos}</strong>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -117,9 +117,9 @@ async function cargarBoletos() {
             
             boletosEvento.forEach((boleto, index) => {
                 const estadoClass = {
-                    'ACTIVO': 'success',
+                    'ACTIVO': 'primary',
                     'USADO': 'secondary',
-                    'CANCELADO': 'danger'
+                    'CANCELADO': 'secondary'
                 }[boleto.estado] || 'secondary';
                 
                 const estadoIcon = {
@@ -172,7 +172,7 @@ async function cargarBoletos() {
                                             </div>
                                         ` : ''}
                                         ${boleto.estado === 'ACTIVO' ? `
-                                            <button class="btn btn-sm btn-danger mt-2" onclick="cancelarBoleto(${boleto.id})">
+                                            <button class="btn btn-sm btn-outline-secondary mt-2" onclick="cancelarBoleto(${boleto.id})">
                                                 <i class="bi bi-x-circle"></i> Cancelar Boleto
                                             </button>
                                         ` : ''}
@@ -189,10 +189,10 @@ async function cargarBoletos() {
                                                 </div>
                                             </div>
                                             <div class="d-grid gap-2 mt-3">
-                                                <button class="btn btn-sm btn-outline-primary" onclick="descargarQR(${boleto.id}, '${boleto.codigoQR}')">
+                                                <button class="btn btn-sm btn-primary" onclick="descargarQR(${boleto.id}, '${boleto.codigoQR}')">
                                                     <i class="bi bi-download"></i> Descargar
                                                 </button>
-                                                <button class="btn btn-sm btn-outline-info" onclick="verQRGrande(${boleto.id})">
+                                                <button class="btn btn-sm btn-outline-primary" onclick="verQRGrande(${boleto.id})">
                                                     <i class="bi bi-arrows-fullscreen"></i> Ver Grande
                                                 </button>
                                             </div>
@@ -401,7 +401,7 @@ async function cargarMisEventos() {
                                         ${Utils.formatearFecha(evento.fechaEvento)}
                                     </p>
                                     <p class="card-text text-muted small mb-3">
-                                        <i class="bi bi-geo-alt text-danger"></i> 
+                                        <i class="bi bi-geo-alt text-primary"></i> 
                                         ${evento.lugar || 'Sin ubicación'}
                                     </p>
                                     
@@ -415,20 +415,20 @@ async function cargarMisEventos() {
                                         <div class="col-6">
                                             <div class="text-center p-2 bg-light rounded">
                                                 <small class="text-muted d-block">Precio</small>
-                                                <strong class="text-success">$${evento.precio || 0}</strong>
+                                                <strong class="text-primary">$${evento.precio || 0}</strong>
                                             </div>
                                         </div>
                                     </div>
                                     
                                     <div class="d-grid gap-2">
-                                        <a href="evento-detalle.html?id=${evento.id}" class="btn btn-outline-primary btn-sm">
+                                        <a href="evento-detalle.html?id=${evento.id}" class="btn btn-primary btn-sm">
                                             <i class="bi bi-eye"></i> Ver Detalles
                                         </a>
                                         <div class="btn-group btn-group-sm">
-                                            <button class="btn btn-warning" onclick="editarEvento(${evento.id})">
+                                            <button class="btn btn-outline-primary" onclick="editarEvento(${evento.id})">
                                                 <i class="bi bi-pencil"></i> Editar
                                             </button>
-                                            <button class="btn btn-danger" onclick="eliminarEvento(${evento.id}, '${evento.titulo.replace(/'/g, "\\'")}')">
+                                            <button class="btn btn-outline-secondary" onclick="eliminarEvento(${evento.id}, '${evento.titulo.replace(/'/g, "\\'")}')">
                                                 <i class="bi bi-trash"></i> Eliminar
                                             </button>
                                         </div>
@@ -525,10 +525,10 @@ async function cargarEstadisticas() {
         // Mostrar estadísticas detalladas por evento
         container.innerHTML = estadisticas.map(stat => `
             <div class="card mb-3 border-0 shadow-sm">
-                <div class="card-header bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    <h6 class="mb-0 text-white">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0">
                         <i class="bi bi-calendar-event"></i> ${stat.tituloEvento}
-                        <span class="badge bg-white text-dark float-end">${stat.estadoEvento}</span>
+                        <span class="badge bg-white text-primary float-end">${stat.estadoEvento}</span>
                     </h6>
                 </div>
                 <div class="card-body">
@@ -543,7 +543,7 @@ async function cargarEstadisticas() {
                                 </div>
                             </div>
                             <div class="progress" style="height: 20px;">
-                                <div class="progress-bar ${stat.porcentajeOcupacion > 80 ? 'bg-success' : stat.porcentajeOcupacion > 50 ? 'bg-warning' : 'bg-info'}" 
+                                <div class="progress-bar bg-primary" 
                                      style="width: ${stat.porcentajeOcupacion}%"
                                      role="progressbar">
                                     <strong>${stat.porcentajeOcupacion.toFixed(1)}%</strong>
@@ -553,30 +553,30 @@ async function cargarEstadisticas() {
                         <div class="col-md-6">
                             <div class="row g-2">
                                 <div class="col-6">
-                                    <div class="text-center p-2 bg-success bg-opacity-10 rounded">
-                                        <i class="bi bi-cash-coin text-success"></i>
-                                        <div><strong class="text-success">$${parseFloat(stat.ingresosTotales).toFixed(2)}</strong></div>
+                                    <div class="text-center p-2 bg-primary bg-opacity-10 rounded">
+                                        <i class="bi bi-cash-coin text-primary"></i>
+                                        <div><strong class="text-primary">$${parseFloat(stat.ingresosTotales).toFixed(2)}</strong></div>
                                         <small class="text-muted">Ingresos</small>
                                     </div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="text-center p-2 bg-warning bg-opacity-10 rounded">
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                        <div><strong class="text-warning">${stat.totalResenas > 0 ? stat.promedioCalificacion.toFixed(1) : 'N/A'}</strong></div>
+                                    <div class="text-center p-2 bg-light rounded">
+                                        <i class="bi bi-star-fill text-primary"></i>
+                                        <div><strong class="text-primary">${stat.totalResenas > 0 ? stat.promedioCalificacion.toFixed(1) : 'N/A'}</strong></div>
                                         <small class="text-muted">${stat.totalResenas} reseñas</small>
                                     </div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="text-center p-2 bg-info bg-opacity-10 rounded">
-                                        <i class="bi bi-camera text-info"></i>
-                                        <div><strong class="text-info">${stat.totalFotos}</strong></div>
+                                    <div class="text-center p-2 bg-light rounded">
+                                        <i class="bi bi-camera text-muted"></i>
+                                        <div><strong class="text-dark">${stat.totalFotos}</strong></div>
                                         <small class="text-muted">Fotos</small>
                                     </div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="text-center p-2 bg-secondary bg-opacity-10 rounded">
-                                        <i class="bi bi-chat text-secondary"></i>
-                                        <div><strong class="text-secondary">${stat.totalMensajes}</strong></div>
+                                    <div class="text-center p-2 bg-light rounded">
+                                        <i class="bi bi-chat text-muted"></i>
+                                        <div><strong class="text-dark">${stat.totalMensajes}</strong></div>
                                         <small class="text-muted">Mensajes</small>
                                     </div>
                                 </div>

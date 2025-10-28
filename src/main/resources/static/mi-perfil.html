@@ -40,18 +40,18 @@
     </nav>
 
     <!-- Header del Perfil -->
-    <div class="bg-primary text-white py-5">
+    <div class="bg-white border-bottom py-4">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-auto">
-                    <div class="bg-white rounded-circle p-3" style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center;">
+                    <div class="bg-primary bg-opacity-10 rounded-circle p-3" style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center;">
                         <i class="bi bi-person-circle display-1 text-primary"></i>
                     </div>
                 </div>
                 <div class="col">
-                    <h2 class="mb-2" id="username">Usuario</h2>
-                    <p class="mb-2" id="email"><i class="bi bi-envelope-fill me-2"></i>email@ejemplo.com</p>
-                    <span class="badge bg-light text-primary px-3 py-2" id="rol">
+                    <h2 class="mb-2 text-dark" id="username">Usuario</h2>
+                    <p class="mb-2 text-muted" id="email"><i class="bi bi-envelope me-2"></i>email@ejemplo.com</p>
+                    <span class="badge bg-primary px-3 py-2" id="rol">
                         <i class="bi bi-person-badge me-1"></i>USER
                     </span>
                 </div>
@@ -65,45 +65,45 @@
             <!-- Estadísticas rápidas -->
             <div class="row mb-4">
                 <div class="col-md-3 mb-3">
-                    <div class="card shadow-sm border-0 h-100">
+                    <div class="card border-0 shadow-sm h-100">
                         <div class="card-body text-center">
                             <div class="mb-2">
                                 <i class="bi bi-calendar-event text-primary" style="font-size: 2.5rem;"></i>
                             </div>
-                            <h3 class="mb-0" id="totalEventosQuick">0</h3>
+                            <h3 class="mb-0 text-primary" id="totalEventosQuick">0</h3>
                             <p class="text-muted mb-0 small">Eventos Creados</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3 mb-3">
-                    <div class="card shadow-sm border-0 h-100">
+                    <div class="card border-0 shadow-sm h-100">
                         <div class="card-body text-center">
                             <div class="mb-2">
-                                <i class="bi bi-ticket-perforated text-success" style="font-size: 2.5rem;"></i>
+                                <i class="bi bi-ticket-perforated text-primary" style="font-size: 2.5rem;"></i>
                             </div>
-                            <h3 class="mb-0" id="totalBoletosQuick">0</h3>
+                            <h3 class="mb-0 text-primary" id="totalBoletosQuick">0</h3>
                             <p class="text-muted mb-0 small">Boletos Comprados</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3 mb-3">
-                    <div class="card shadow-sm border-0 h-100">
+                    <div class="card border-0 shadow-sm h-100">
                         <div class="card-body text-center">
                             <div class="mb-2">
-                                <i class="bi bi-cash-coin text-warning" style="font-size: 2.5rem;"></i>
+                                <i class="bi bi-cash-coin text-primary" style="font-size: 2.5rem;"></i>
                             </div>
-                            <h3 class="mb-0" id="ingresosQuick">$0</h3>
+                            <h3 class="mb-0 text-primary" id="ingresosQuick">$0</h3>
                             <p class="text-muted mb-0 small">Ingresos Generados</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3 mb-3">
-                    <div class="card shadow-sm border-0 h-100">
+                    <div class="card border-0 shadow-sm h-100">
                         <div class="card-body text-center">
                             <div class="mb-2">
-                                <i class="bi bi-people-fill text-info" style="font-size: 2.5rem;"></i>
+                                <i class="bi bi-people-fill text-primary" style="font-size: 2.5rem;"></i>
                             </div>
-                            <h3 class="mb-0" id="asistentesQuick">0</h3>
+                            <h3 class="mb-0 text-primary" id="asistentesQuick">0</h3>
                             <p class="text-muted mb-0 small">Total Asistentes</p>
                         </div>
                     </div>
@@ -115,21 +115,21 @@
             <div class="row">
                 <!-- Tabs -->
                 <div class="col-12">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-header bg-white border-0 pt-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white border-bottom pt-4">
                             <ul class="nav nav-pills nav-fill" id="perfilTabs" role="tablist">
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link active rounded-pill mx-1" id="mis-eventos-tab" data-bs-toggle="tab" data-bs-target="#mis-eventos" type="button">
+                                    <button class="nav-link active" id="mis-eventos-tab" data-bs-toggle="tab" data-bs-target="#mis-eventos" type="button">
                                         <i class="bi bi-calendar-check"></i> Mis Eventos
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link rounded-pill mx-1" id="boletos-tab" data-bs-toggle="tab" data-bs-target="#boletos" type="button">
+                                    <button class="nav-link" id="boletos-tab" data-bs-toggle="tab" data-bs-target="#boletos" type="button">
                                         <i class="bi bi-ticket"></i> Mis Boletos
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link rounded-pill mx-1" id="estadisticas-tab" data-bs-toggle="tab" data-bs-target="#estadisticas" type="button">
+                                    <button class="nav-link" id="estadisticas-tab" data-bs-toggle="tab" data-bs-target="#estadisticas" type="button">
                                         <i class="bi bi-graph-up"></i> Estadísticas
                                     </button>
                                 </li>
@@ -143,7 +143,7 @@
                                 <h5 class="mb-0">
                                     <i class="bi bi-calendar-event text-primary"></i> Eventos que Organizo
                                 </h5>
-                                <a href="crear-evento.html" class="btn btn-primary rounded-pill">
+                                <a href="crear-evento.html" class="btn btn-primary">
                                     <i class="bi bi-plus-circle"></i> Crear Nuevo
                                 </a>
                             </div>
@@ -160,7 +160,7 @@
                         <!-- Mis Boletos -->
                         <div class="tab-pane fade" id="boletos" role="tabpanel">
                             <h5 class="mb-4">
-                                <i class="bi bi-ticket-perforated text-success"></i> Mis Boletos
+                                <i class="bi bi-ticket-perforated text-primary"></i> Mis Boletos
                             </h5>
                             <div id="boletosContainer">
                                 <div class="text-center py-5">
@@ -180,28 +180,28 @@
                             
                             <div class="row mb-4">
                                 <div class="col-md-4 mb-3">
-                                    <div class="card border-primary h-100">
+                                    <div class="card border-0 shadow-sm h-100">
                                         <div class="card-body text-center">
                                             <i class="bi bi-calendar-event text-primary" style="font-size: 2rem;"></i>
-                                            <h3 class="mt-2" id="totalEventos">0</h3>
+                                            <h3 class="mt-2 text-primary" id="totalEventos">0</h3>
                                             <p class="text-muted mb-0">Total Eventos</p>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4 mb-3">
-                                    <div class="card border-success h-100">
+                                    <div class="card border-0 shadow-sm h-100">
                                         <div class="card-body text-center">
-                                            <i class="bi bi-cash-coin text-success" style="font-size: 2rem;"></i>
-                                            <h3 class="mt-2" id="ingresosTotales">$0.00</h3>
+                                            <i class="bi bi-cash-coin text-primary" style="font-size: 2rem;"></i>
+                                            <h3 class="mt-2 text-primary" id="ingresosTotales">$0.00</h3>
                                             <p class="text-muted mb-0">Ingresos Totales</p>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4 mb-3">
-                                    <div class="card border-info h-100">
+                                    <div class="card border-0 shadow-sm h-100">
                                         <div class="card-body text-center">
-                                            <i class="bi bi-ticket-perforated text-info" style="font-size: 2rem;"></i>
-                                            <h3 class="mt-2" id="totalBoletos">0</h3>
+                                            <i class="bi bi-ticket-perforated text-primary" style="font-size: 2rem;"></i>
+                                            <h3 class="mt-2 text-primary" id="totalBoletos">0</h3>
                                             <p class="text-muted mb-0">Boletos Vendidos</p>
                                         </div>
                                     </div>
@@ -209,9 +209,9 @@
                             </div>
 
                             <div class="card border-0 shadow-sm">
-                                <div class="card-header bg-light">
+                                <div class="card-header bg-light border-0">
                                     <h6 class="mb-0">
-                                        <i class="bi bi-bar-chart text-success"></i> Estadísticas por Evento
+                                        <i class="bi bi-bar-chart text-primary"></i> Estadísticas por Evento
                                     </h6>
                                 </div>
                                 <div class="card-body">

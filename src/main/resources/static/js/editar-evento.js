@@ -16,7 +16,113 @@ let eventoActual = null;
 document.addEventListener('DOMContentLoaded', async () => {
     await cargarCategorias();
     await cargarEvento();
+    configurarDragAndDrop();
 });
+
+// Configurar Drag & Drop para imagen
+function configurarDragAndDrop() {
+    const dropZone = document.getElementById('dropZoneEditar');
+    const imagenInput = document.getElementById('imagen');
+    
+    // Click en la zona abre el selector
+    dropZone.addEventListener('click', () => {
+        imagenInput.click();
+    });
+    
+    // Prevenir comportamiento por defecto
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    // Efectos visuales al arrastrar
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => {
+            dropZone.style.backgroundColor = '#e7f3ff';
+            dropZone.style.borderColor = '#0d6efd';
+        });
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => {
+            dropZone.style.backgroundColor = '#f8f9fa';
+            dropZone.style.borderColor = '#dee2e6';
+        });
+    });
+    
+    // Manejar el drop
+    dropZone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length > 0) {
+            imagenInput.files = files;
+            manejarArchivo(files[0]);
+        }
+    });
+    
+    // Manejar selección desde input
+    imagenInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            manejarArchivo(e.target.files[0]);
+        }
+    });
+    
+    // Procesar archivo
+    function manejarArchivo(file) {
+        // Validar tipo
+        if (!file.type.startsWith('image/')) {
+            alert('El archivo debe ser una imagen (JPG, PNG, GIF)');
+            imagenInput.value = '';
+            return;
+        }
+        
+        // Validar tamaño (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('La imagen no debe superar los 5MB');
+            imagenInput.value = '';
+            return;
+        }
+        
+        // Mostrar preview de la nueva imagen
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('imagenPreview').innerHTML = `
+                <div class="position-relative">
+                    <img src="${e.target.result}" alt="Nueva imagen" class="img-fluid rounded shadow-sm" style="max-height: 300px;">
+                    <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="cancelarNuevaImagen()">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                </div>
+            `;
+            dropZone.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Función para cancelar la nueva imagen y volver a la original
+function cancelarNuevaImagen() {
+    document.getElementById('imagen').value = '';
+    document.getElementById('dropZoneEditar').style.display = 'block';
+    
+    // Restaurar imagen original si existe
+    if (eventoActual && eventoActual.imagenUrl) {
+        document.getElementById('imagenPreview').innerHTML = `
+            <div class="alert alert-info">
+                <strong>Imagen actual:</strong><br>
+                <img src="${eventoActual.imagenUrl}" alt="Imagen del evento" class="img-thumbnail mt-2" style="max-width: 200px;">
+                <p class="mt-2 mb-0"><small>Sube una nueva imagen si deseas cambiarla</small></p>
+            </div>
+        `;
+    } else {
+        document.getElementById('imagenPreview').innerHTML = '';
+    }
+}
 
 // Cargar categorías
 async function cargarCategorias() {

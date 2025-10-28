@@ -4,32 +4,95 @@ const usuario = Utils.verificarSesion();
 // Cargar categorías al iniciar
 document.addEventListener('DOMContentLoaded', () => {
     cargarCategorias();
+    configurarDragAndDrop();
+});
+
+// Configurar Drag & Drop para imagen
+function configurarDragAndDrop() {
+    const dropZone = document.getElementById('dropZoneCrear');
+    const imagenInput = document.getElementById('imagenEvento');
+    const previewContainer = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
     
-    // Preview de imagen
-    document.getElementById('imagenEvento').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            // Validar tamaño
-            if (file.size > 5 * 1024 * 1024) {
-                Utils.mostrarAlerta('alertContainer', 'La imagen no debe superar los 5MB', 'warning');
-                this.value = '';
-                return;
-            }
-            
-            // Mostrar preview
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                document.getElementById('previewImg').src = event.target.result;
-                document.getElementById('imagePreview').classList.remove('d-none');
-            };
-            reader.readAsDataURL(file);
+    // Click en la zona abre el selector
+    dropZone.addEventListener('click', () => {
+        imagenInput.click();
+    });
+    
+    // Prevenir comportamiento por defecto
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    // Efectos visuales al arrastrar
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => {
+            dropZone.style.backgroundColor = '#e7f3ff';
+            dropZone.style.borderColor = '#0d6efd';
+        });
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => {
+            dropZone.style.backgroundColor = '#f8f9fa';
+            dropZone.style.borderColor = '#dee2e6';
+        });
+    });
+    
+    // Manejar el drop
+    dropZone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length > 0) {
+            imagenInput.files = files;
+            manejarArchivo(files[0]);
         }
     });
-});
+    
+    // Manejar selección desde input
+    imagenInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            manejarArchivo(e.target.files[0]);
+        }
+    });
+    
+    // Procesar archivo
+    function manejarArchivo(file) {
+        // Validar tipo
+        if (!file.type.startsWith('image/')) {
+            alert('El archivo debe ser una imagen (JPG, PNG, GIF)');
+            imagenInput.value = '';
+            return;
+        }
+        
+        // Validar tamaño (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('La imagen no debe superar los 5MB');
+            imagenInput.value = '';
+            return;
+        }
+        
+        // Mostrar preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewImg.src = e.target.result;
+            dropZone.style.display = 'none';
+            previewContainer.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+}
 
 function eliminarImagen() {
     document.getElementById('imagenEvento').value = '';
-    document.getElementById('imagePreview').classList.add('d-none');
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('dropZoneCrear').style.display = 'block';
     document.getElementById('previewImg').src = '';
 }
 
