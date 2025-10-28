@@ -54,7 +54,7 @@ public class PagoService {
         pago.setUsuario(usuario);
         pago.setMonto(monto);
         pago.setMetodoPago(metodoPago);
-        pago.setEmailConfirmacion(email);
+        // pago.setEmailConfirmacion(email);
         
         // Generar referencia única
         pago.setReferenciaPago(generarReferenciaPago());
@@ -70,7 +70,7 @@ public class PagoService {
         }
         
         // Siempre aprobar el pago
-        pago.setEstado("APROBADO")
+        pago.setEstado("APROBADO");
         
         // Guardar pago
         Pago pagoGuardado = pagoRepository.save(pago);
