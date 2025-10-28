@@ -195,30 +195,41 @@
 
                     <!-- Fotos -->
                     <div class="tab-pane fade" id="fotos" role="tabpanel">
-                        <!-- Formulario para subir fotos -->
+                        <!-- Zona de Drag & Drop -->
                         <div class="card mb-3">
                             <div class="card-body">
                                 <h5 class="mb-3">
                                     <i class="bi bi-cloud-upload"></i> Subir Foto
                                 </h5>
-                                <form id="fotoForm">
-                                    <div class="mb-3">
-                                        <label for="imagenFoto" class="form-label">Selecciona una imagen *</label>
-                                        <input type="file" class="form-control" id="imagenFoto" accept="image/*" required>
-                                        <div class="form-text">Formatos: JPG, PNG, GIF. Máximo 5MB</div>
+                                
+                                <!-- Drag & Drop Zone -->
+                                <div id="dropZone" class="border border-2 border-dashed rounded p-5 text-center" 
+                                     style="background-color: #f8f9fa; cursor: pointer; transition: all 0.3s;">
+                                    <input type="file" id="imagenFoto" accept="image/*" style="display: none;">
+                                    <i class="bi bi-cloud-arrow-up" style="font-size: 3rem; color: #6c757d;"></i>
+                                    <h5 class="mt-3">Arrastrá tu imagen aquí</h5>
+                                    <p class="text-muted mb-2">o hacé click para seleccionar</p>
+                                    <small class="text-muted">Formatos: JPG, PNG, GIF • Máximo 5MB</small>
+                                </div>
+                                
+                                <!-- Preview con descripción -->
+                                <div id="previewContainer" style="display: none;">
+                                    <div class="mt-3">
+                                        <img id="previewFotoImg" class="img-fluid rounded mb-3" style="max-height: 300px; width: 100%; object-fit: contain;">
                                     </div>
                                     <div class="mb-3">
                                         <label for="descripcionFoto" class="form-label">Descripción (opcional)</label>
                                         <input type="text" class="form-control" id="descripcionFoto" placeholder="Describe la foto...">
                                     </div>
-                                    <!-- Preview -->
-                                    <div id="previewFoto" class="mb-3" style="display: none;">
-                                        <img id="previewFotoImg" class="img-fluid rounded" style="max-height: 300px;">
+                                    <div class="d-flex gap-2">
+                                        <button id="btnSubirFoto" class="btn btn-primary">
+                                            <i class="bi bi-upload"></i> Subir Foto
+                                        </button>
+                                        <button id="btnCancelarFoto" class="btn btn-outline-secondary">
+                                            <i class="bi bi-x"></i> Cancelar
+                                        </button>
                                     </div>
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="bi bi-upload"></i> Subir Foto
-                                    </button>
-                                </form>
+                                </div>
                             </div>
                         </div>
                         

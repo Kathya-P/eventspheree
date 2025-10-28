@@ -395,64 +395,127 @@ document.getElementById('chatForm')?.addEventListener('submit', async (e) => {
 
 // ==================== FUNCIONALIDAD DE FOTOS ====================
 
-// Preview de imagen antes de subir
-document.getElementById('imagenFoto').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        // Validar tamaño (5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            alert('La imagen no debe superar los 5MB');
-            e.target.value = '';
-            document.getElementById('previewFoto').style.display = 'none';
-            return;
-        }
-        
-        // Validar tipo
-        if (!file.type.startsWith('image/')) {
-            alert('El archivo debe ser una imagen');
-            e.target.value = '';
-            document.getElementById('previewFoto').style.display = 'none';
-            return;
-        }
-        
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            document.getElementById('previewFotoImg').src = event.target.result;
-            document.getElementById('previewFoto').style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    } else {
-        document.getElementById('previewFoto').style.display = 'none';
+// Variables para drag & drop
+const dropZone = document.getElementById('dropZone');
+const imagenInput = document.getElementById('imagenFoto');
+const previewContainer = document.getElementById('previewContainer');
+const previewImg = document.getElementById('previewFotoImg');
+const btnSubirFoto = document.getElementById('btnSubirFoto');
+const btnCancelarFoto = document.getElementById('btnCancelarFoto');
+let archivoSeleccionado = null;
+
+// Click en la zona de drop abre el selector de archivos
+dropZone.addEventListener('click', () => {
+    imagenInput.click();
+});
+
+// Prevenir comportamiento por defecto del navegador
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+// Efectos visuales al arrastrar
+['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => {
+        dropZone.style.backgroundColor = '#e7f3ff';
+        dropZone.style.borderColor = '#0d6efd';
+    });
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => {
+        dropZone.style.backgroundColor = '#f8f9fa';
+        dropZone.style.borderColor = '#dee2e6';
+    });
+});
+
+// Manejar el drop
+dropZone.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    
+    if (files.length > 0) {
+        manejarArchivo(files[0]);
     }
 });
 
-// Subir foto
-document.getElementById('fotoForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+// Manejar selección desde input
+imagenInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+        manejarArchivo(e.target.files[0]);
+    }
+});
+
+// Procesar archivo seleccionado o arrastrado
+function manejarArchivo(file) {
+    // Validar tipo
+    if (!file.type.startsWith('image/')) {
+        alert('El archivo debe ser una imagen (JPG, PNG, GIF)');
+        return;
+    }
     
+    // Validar tamaño (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        alert('La imagen no debe superar los 5MB');
+        return;
+    }
+    
+    archivoSeleccionado = file;
+    
+    // Mostrar preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        previewImg.src = e.target.result;
+        dropZone.style.display = 'none';
+        previewContainer.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+}
+
+// Botón cancelar
+btnCancelarFoto.addEventListener('click', () => {
+    archivoSeleccionado = null;
+    imagenInput.value = '';
+    document.getElementById('descripcionFoto').value = '';
+    previewContainer.style.display = 'none';
+    dropZone.style.display = 'block';
+});
+
+// Subir foto
+btnSubirFoto.addEventListener('click', async () => {
     // Verificar autenticación
     if (!Utils.requiereAutenticacion('Debes iniciar sesión para subir fotos')) {
         return;
     }
     
-    const usuario = Utils.obtenerUsuarioLocal();
-    const imagenInput = document.getElementById('imagenFoto');
-    const descripcion = document.getElementById('descripcionFoto').value;
-    
-    if (!imagenInput.files || !imagenInput.files[0]) {
+    if (!archivoSeleccionado) {
         alert('Por favor selecciona una imagen');
         return;
     }
     
+    const usuario = Utils.obtenerUsuarioLocal();
+    const descripcion = document.getElementById('descripcionFoto').value;
+    
     try {
-        const foto = await FotoAPI.subir(usuario.id, eventoId, imagenInput.files[0], descripcion);
+        btnSubirFoto.disabled = true;
+        btnSubirFoto.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Subiendo...';
+        
+        const foto = await FotoAPI.subir(usuario.id, eventoId, archivoSeleccionado, descripcion);
         
         if (foto.id) {
-            alert('Foto subida exitosamente');
+            alert('¡Foto subida exitosamente! 📸');
             
-            // Limpiar formulario
-            document.getElementById('fotoForm').reset();
-            document.getElementById('previewFoto').style.display = 'none';
+            // Reset
+            archivoSeleccionado = null;
+            imagenInput.value = '';
+            document.getElementById('descripcionFoto').value = '';
+            previewContainer.style.display = 'none';
+            dropZone.style.display = 'block';
             
             // Recargar galería
             cargarFotos();
@@ -462,6 +525,9 @@ document.getElementById('fotoForm').addEventListener('submit', async (e) => {
     } catch (error) {
         console.error('Error:', error);
         alert('Error al subir la foto. Intenta nuevamente.');
+    } finally {
+        btnSubirFoto.disabled = false;
+        btnSubirFoto.innerHTML = '<i class="bi bi-upload"></i> Subir Foto';
     }
 });
 

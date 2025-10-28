@@ -495,6 +495,14 @@ async function cargarEstadisticas() {
         
         if (estadisticas.length === 0) {
             container.innerHTML = '<p class="text-muted">No tienes eventos para mostrar estadísticas.</p>';
+            // Resetear estadísticas rápidas
+            document.getElementById('totalEventosQuick').textContent = '0';
+            document.getElementById('totalBoletosQuick').textContent = '0';
+            document.getElementById('ingresosQuick').textContent = '$0';
+            document.getElementById('asistentesQuick').textContent = '0';
+            document.getElementById('totalEventos').textContent = '0';
+            document.getElementById('totalBoletos').textContent = '0';
+            document.getElementById('ingresosTotales').textContent = '$0.00';
             return;
         }
         
@@ -503,51 +511,76 @@ async function cargarEstadisticas() {
         let totalBoletos = estadisticas.reduce((sum, e) => sum + e.boletosVendidos, 0);
         let ingresosTotales = estadisticas.reduce((sum, e) => sum + parseFloat(e.ingresosTotales), 0);
         
-        // Actualizar tarjetas de resumen
+        // Actualizar tarjetas de resumen rápido (header)
+        document.getElementById('totalEventosQuick').textContent = totalEventos;
+        document.getElementById('totalBoletosQuick').textContent = totalBoletos;
+        document.getElementById('ingresosQuick').textContent = '$' + ingresosTotales.toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('asistentesQuick').textContent = totalBoletos;
+        
+        // Actualizar tarjetas de resumen (tab estadísticas)
         document.getElementById('totalEventos').textContent = totalEventos;
         document.getElementById('totalBoletos').textContent = totalBoletos;
         document.getElementById('ingresosTotales').textContent = '$' + ingresosTotales.toFixed(2);
         
         // Mostrar estadísticas detalladas por evento
         container.innerHTML = estadisticas.map(stat => `
-            <div class="card mb-3 border-primary">
-                <div class="card-header bg-primary text-white">
-                    <h6 class="mb-0">
+            <div class="card mb-3 border-0 shadow-sm">
+                <div class="card-header bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h6 class="mb-0 text-white">
                         <i class="bi bi-calendar-event"></i> ${stat.tituloEvento}
-                        <span class="badge bg-light text-dark float-end">${stat.estadoEvento}</span>
+                        <span class="badge bg-white text-dark float-end">${stat.estadoEvento}</span>
                     </h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6">
-                            <p class="mb-2">
-                                <i class="bi bi-ticket text-primary"></i>
-                                <strong>Boletos:</strong> ${stat.boletosVendidos} / ${stat.totalBoletos}
-                                (${stat.boletosDisponibles} disponibles)
-                            </p>
-                            <div class="progress mb-3" style="height: 25px;">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-ticket-perforated text-primary fs-4 me-2"></i>
+                                <div>
+                                    <small class="text-muted d-block">Ocupación</small>
+                                    <strong>${stat.boletosVendidos} / ${stat.totalBoletos}</strong>
+                                    <small class="text-muted">(${stat.boletosDisponibles} disponibles)</small>
+                                </div>
+                            </div>
+                            <div class="progress" style="height: 20px;">
                                 <div class="progress-bar ${stat.porcentajeOcupacion > 80 ? 'bg-success' : stat.porcentajeOcupacion > 50 ? 'bg-warning' : 'bg-info'}" 
-                                     style="width: ${stat.porcentajeOcupacion}%">
-                                    ${stat.porcentajeOcupacion.toFixed(1)}%
+                                     style="width: ${stat.porcentajeOcupacion}%"
+                                     role="progressbar">
+                                    <strong>${stat.porcentajeOcupacion.toFixed(1)}%</strong>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <p class="mb-2">
-                                <i class="bi bi-cash-coin text-success"></i>
-                                <strong>Ingresos:</strong> $${parseFloat(stat.ingresosTotales).toFixed(2)}
-                            </p>
-                            <p class="mb-2">
-                                <i class="bi bi-star-fill text-warning"></i>
-                                <strong>Reseñas:</strong> ${stat.totalResenas} 
-                                ${stat.totalResenas > 0 ? `(⭐ ${stat.promedioCalificacion.toFixed(1)})` : ''}
-                            </p>
-                            <p class="mb-2">
-                                <i class="bi bi-camera text-info"></i>
-                                <strong>Fotos:</strong> ${stat.totalFotos} | 
-                                <i class="bi bi-chat text-secondary"></i>
-                                <strong>Mensajes:</strong> ${stat.totalMensajes}
-                            </p>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="text-center p-2 bg-success bg-opacity-10 rounded">
+                                        <i class="bi bi-cash-coin text-success"></i>
+                                        <div><strong class="text-success">$${parseFloat(stat.ingresosTotales).toFixed(2)}</strong></div>
+                                        <small class="text-muted">Ingresos</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center p-2 bg-warning bg-opacity-10 rounded">
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                        <div><strong class="text-warning">${stat.totalResenas > 0 ? stat.promedioCalificacion.toFixed(1) : 'N/A'}</strong></div>
+                                        <small class="text-muted">${stat.totalResenas} reseñas</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center p-2 bg-info bg-opacity-10 rounded">
+                                        <i class="bi bi-camera text-info"></i>
+                                        <div><strong class="text-info">${stat.totalFotos}</strong></div>
+                                        <small class="text-muted">Fotos</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center p-2 bg-secondary bg-opacity-10 rounded">
+                                        <i class="bi bi-chat text-secondary"></i>
+                                        <div><strong class="text-secondary">${stat.totalMensajes}</strong></div>
+                                        <small class="text-muted">Mensajes</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
