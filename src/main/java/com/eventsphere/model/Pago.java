@@ -1,5 +1,6 @@
 package com.eventsphere.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,10 +15,12 @@ public class Pago {
     
     @ManyToOne
     @JoinColumn(name = "boleto_id")
+    @JsonIgnoreProperties({"pago", "usuario", "evento"})
     private Boleto boleto;
     
     @ManyToOne
     @JoinColumn(name = "usuario_id")
+    @JsonIgnoreProperties({"password", "boletos", "eventos", "resenas"})
     private Usuario usuario;
     
     @Column(nullable = false)
