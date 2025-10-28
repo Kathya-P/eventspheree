@@ -70,15 +70,6 @@ class ModalPago {
                             <div id="formPagoContainer">
                                 ${this.generarFormularioTarjeta()}
                             </div>
-
-                            <!-- Mensaje de seguridad -->
-                            <div class="alert alert-info mt-3">
-                                <i class="bi bi-shield-check"></i>
-                                <small>
-                                    <strong>Pago seguro:</strong> No guardamos tu información de tarjeta completa. 
-                                    Solo almacenamos los últimos 4 dígitos para referencia.
-                                </small>
-                            </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
