@@ -58,8 +58,8 @@ async function cargarBoletos() {
             boletosPorEvento[eventoId].boletos.push(boleto);
         });
         
-        // Generar HTML
-        let html = '';
+        // Generar HTML en cuadrícula
+        let html = '<div class="row g-4">';
         
         Object.values(boletosPorEvento).forEach(grupo => {
             const evento = grupo.evento;
@@ -72,51 +72,61 @@ async function cargarBoletos() {
             const ahora = new Date();
             const esEventoPasado = fechaEvento < ahora;
             
+            // Imagen del evento o placeholder
+            const imagenEvento = evento.imagen || 'https://via.placeholder.com/400x250/2c3e50/ffffff?text=' + encodeURIComponent(evento.titulo);
+            
             html += `
-                <div class="card mb-4 border-0 shadow-sm">
-                    <div class="card-header bg-primary text-white">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <h5 class="mb-1">
-                                    <i class="bi bi-calendar-event"></i> ${evento.titulo}
-                                </h5>
-                                <small>
-                                    <i class="bi bi-calendar3"></i> ${Utils.formatearFecha(evento.fechaEvento)} • 
-                                    <i class="bi bi-geo-alt"></i> ${evento.lugar}
-                                </small>
-                            </div>
-                            <div class="col-md-4 text-end">
-                                <span class="badge ${esEventoPasado ? 'bg-light text-dark' : 'bg-white text-primary'} fs-6">
-                                    ${esEventoPasado ? 'Evento Finalizado' : 'Evento Próximo'}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <!-- Resumen de boletos -->
-                        <div class="row g-2 mb-3">
-                            <div class="col-md-4">
-                                <div class="p-2 bg-light rounded text-center">
-                                    <small class="text-muted d-block">Total Boletos</small>
-                                    <strong class="fs-5 text-primary">${boletosEvento.length}</strong>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 border-0 shadow-sm hover-card">
+                        <!-- Imagen del evento -->
+                        <img src="${imagenEvento}" class="card-img-top" alt="${evento.titulo}" 
+                             style="height: 200px; object-fit: cover;">
+                        
+                        <!-- Badge de estado superpuesto -->
+                        <span class="position-absolute top-0 end-0 m-3 badge ${esEventoPasado ? 'bg-secondary' : 'bg-success'} px-3 py-2">
+                            ${esEventoPasado ? '✓ Finalizado' : '📅 Próximo'}
+                        </span>
+                        
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-dark mb-2">${evento.titulo}</h5>
+                            <p class="text-muted small mb-3">
+                                <i class="bi bi-calendar3 text-primary"></i> ${Utils.formatearFecha(evento.fechaEvento)}<br>
+                                <i class="bi bi-geo-alt text-primary"></i> ${evento.lugar}
+                            </p>
+                            
+                            <!-- Resumen de boletos -->
+                            <div class="row g-2 mb-3">
+                                <div class="col-4">
+                                    <div class="text-center p-2 bg-light rounded">
+                                        <div class="fw-bold text-primary fs-5">${boletosEvento.length}</div>
+                                        <small class="text-muted">Total</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-center p-2 bg-success bg-opacity-10 rounded">
+                                        <div class="fw-bold text-success fs-5">${boletosActivos}</div>
+                                        <small class="text-muted">Activos</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-center p-2 bg-info bg-opacity-10 rounded">
+                                        <div class="fw-bold text-info fs-5">${boletosUsados}</div>
+                                        <small class="text-muted">Usados</small>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="p-2 bg-primary bg-opacity-10 rounded text-center">
-                                    <small class="text-muted d-block">Activos</small>
-                                    <strong class="fs-5 text-primary">${boletosActivos}</strong>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="p-2 bg-secondary bg-opacity-10 rounded text-center">
-                                    <small class="text-muted d-block">Usados</small>
-                                    <strong class="fs-5 text-secondary">${boletosUsados}</strong>
-                                </div>
-                            </div>
+                            
+                            <!-- Botón para ver boletos -->
+                            <button class="btn btn-primary w-100" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#boletos-${evento.id}">
+                                <i class="bi bi-ticket-perforated"></i> Ver Mis Boletos (${boletosEvento.length})
+                            </button>
                         </div>
                         
-                        <!-- Lista de boletos -->
-                        <div class="accordion" id="accordion-${evento.id}">
+                        <!-- Lista de boletos colapsable -->
+                        <div class="collapse" id="boletos-${evento.id}">
+                            <div class="card-body border-top pt-3">
+                                <div class="accordion" id="accordion-${evento.id}">
             `;
             
             boletosEvento.forEach((boleto, index) => {
@@ -210,11 +220,15 @@ async function cargarBoletos() {
             });
             
             html += `
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             `;
         });
+        
+        html += '</div>'; // Cerrar row
         
         container.innerHTML = html;
         
@@ -529,10 +543,10 @@ async function cargarEstadisticas() {
         // Mostrar estadísticas detalladas por evento
         container.innerHTML = estadisticas.map(stat => `
             <div class="card mb-3 border-0 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h6 class="mb-0">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);">
+                    <h6 class="mb-0 fw-bold">
                         <i class="bi bi-calendar-event"></i> ${stat.tituloEvento}
-                        <span class="badge bg-white text-primary float-end">${stat.estadoEvento}</span>
+                        <span class="badge bg-white text-dark float-end fw-semibold">${stat.estadoEvento}</span>
                     </h6>
                 </div>
                 <div class="card-body">
