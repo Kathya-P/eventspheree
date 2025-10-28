@@ -59,11 +59,6 @@ class ModalPago {
                                 <label class="btn btn-outline-primary" for="metodoPayPal">
                                     <i class="bi bi-paypal"></i> PayPal
                                 </label>
-
-                                <input type="radio" class="btn-check" name="metodoPago" id="metodoTransferencia" value="TRANSFERENCIA">
-                                <label class="btn btn-outline-primary" for="metodoTransferencia">
-                                    <i class="bi bi-bank"></i> Transferencia
-                                </label>
                             </div>
 
                             <!-- Formulario de pago -->
@@ -200,9 +195,6 @@ class ModalPago {
                         break;
                     case 'PAYPAL':
                         container.innerHTML = this.generarFormularioPayPal();
-                        break;
-                    case 'TRANSFERENCIA':
-                        container.innerHTML = this.generarFormularioTransferencia();
                         break;
                 }
             });
