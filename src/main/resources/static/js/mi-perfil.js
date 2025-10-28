@@ -58,75 +58,46 @@ async function cargarBoletos() {
             boletosPorEvento[eventoId].boletos.push(boleto);
         });
         
-        // Generar HTML en cuadrícula
-        let html = '<div class="row g-4">';
+        // Generar HTML en lista
+        let html = '<div class="list-group">';
         
         Object.values(boletosPorEvento).forEach(grupo => {
             const evento = grupo.evento;
             const boletosEvento = grupo.boletos;
             const boletosActivos = boletosEvento.filter(b => b.estado === 'ACTIVO').length;
             const boletosUsados = boletosEvento.filter(b => b.estado === 'USADO').length;
-            const boletosCancelados = boletosEvento.filter(b => b.estado === 'CANCELADO').length;
             
             const fechaEvento = new Date(evento.fechaEvento);
             const ahora = new Date();
             const esEventoPasado = fechaEvento < ahora;
             
-            // Imagen del evento o placeholder con gradiente
-            const imagenEvento = evento.imagenUrl || evento.imagen || `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232c3e50;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%2334495e;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23grad)' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial,sans-serif' font-size='24' font-weight='bold' fill='white' text-anchor='middle' dy='.3em'%3E${encodeURIComponent(evento.titulo)}%3C/text%3E%3C/svg%3E`;
-            
             html += `
-                <div class="col-md-6 col-lg-4">
-                    <div class="card h-100 border-0 shadow-sm hover-card">
-                        <!-- Imagen del evento -->
-                        <img src="${imagenEvento}" class="card-img-top" alt="${evento.titulo}" 
-                             style="height: 200px; object-fit: cover;" 
-                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27400%27 height=%27250%27%3E%3Crect fill=%27%232c3e50%27 width=%27400%27 height=%27250%27/%3E%3Ctext x=%2750%25%27 y=%2750%25%27 font-family=%27Arial%27 font-size=%2720%27 fill=%27white%27 text-anchor=%27middle%27 dy=%27.3em%27%3EEvento%3C/text%3E%3C/svg%3E';">
-                        
-                        <!-- Badge de estado superpuesto -->
-                        <span class="position-absolute top-0 end-0 m-3 badge ${esEventoPasado ? 'bg-secondary' : 'bg-success'} px-3 py-2">
-                            ${esEventoPasado ? '✓ Finalizado' : '📅 Próximo'}
-                        </span>
-                        
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold text-dark mb-2">${evento.titulo}</h5>
-                            <p class="text-muted small mb-3">
-                                <i class="bi bi-calendar3 text-primary"></i> ${Utils.formatearFecha(evento.fechaEvento)}<br>
-                                <i class="bi bi-geo-alt text-primary"></i> ${evento.lugar}
+                <div class="list-group-item mb-3 p-3 border rounded">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="flex-grow-1">
+                            <h5 class="fw-bold text-dark mb-1">${evento.titulo}</h5>
+                            <p class="text-muted mb-2 small">
+                                <i class="bi bi-calendar3 text-primary"></i> ${Utils.formatearFecha(evento.fechaEvento)}
+                                <span class="ms-3"><i class="bi bi-geo-alt text-primary"></i> ${evento.lugar}</span>
                             </p>
-                            
-                            <!-- Resumen de boletos -->
-                            <div class="row g-2 mb-3">
-                                <div class="col-4">
-                                    <div class="text-center p-2 bg-light rounded">
-                                        <div class="fw-bold text-primary fs-5">${boletosEvento.length}</div>
-                                        <small class="text-muted">Total</small>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="text-center p-2 bg-success bg-opacity-10 rounded">
-                                        <div class="fw-bold text-success fs-5">${boletosActivos}</div>
-                                        <small class="text-muted">Activos</small>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="text-center p-2 bg-info bg-opacity-10 rounded">
-                                        <div class="fw-bold text-info fs-5">${boletosUsados}</div>
-                                        <small class="text-muted">Usados</small>
-                                    </div>
-                                </div>
+                            <div class="d-flex gap-3">
+                                <span class="badge ${esEventoPasado ? 'bg-secondary' : 'bg-success'}">${esEventoPasado ? 'Finalizado' : 'Próximo'}</span>
+                                <small class="text-muted">
+                                    <strong>${boletosEvento.length}</strong> boletos |
+                                    <span class="text-success">${boletosActivos} activos</span> |
+                                    <span class="text-info">${boletosUsados} usados</span>
+                                </small>
                             </div>
-                            
-                            <!-- Botón para ver boletos -->
-                            <button class="btn btn-primary w-100" type="button" 
-                                    data-bs-toggle="collapse" data-bs-target="#boletos-${evento.id}">
-                                <i class="bi bi-ticket-perforated"></i> Ver Mis Boletos (${boletosEvento.length})
-                            </button>
                         </div>
-                        
-                        <!-- Lista de boletos -->
-                        <div class="collapse" id="boletos-${evento.id}">
-                            <div class="card-body border-top pt-3">
+                        <button class="btn btn-sm btn-outline-primary" type="button" 
+                                data-bs-toggle="collapse" data-bs-target="#boletos-${evento.id}">
+                            <i class="bi bi-chevron-down"></i> Ver Boletos
+                        </button>
+                    </div>
+                    
+                    <!-- Lista de boletos colapsable -->
+                    <div class="collapse mt-3" id="boletos-${evento.id}">
+                        <div class="border-top pt-3">
             `;
             
             boletosEvento.forEach((boleto, index) => {
@@ -178,7 +149,7 @@ async function cargarBoletos() {
             `;
         });
         
-        html += '</div>'; // Cerrar row
+        html += '</div>'; // Cerrar list-group
         
         container.innerHTML = html;
         
