@@ -154,48 +154,17 @@ async function confirmarCompra() {
     }
     
     try {
-        // Deshabilitar botón para evitar doble click
-        const btnConfirmar = event.target;
-        btnConfirmar.disabled = true;
-        btnConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
+        // Cerrar el modal de cantidad
+        const modalCantidad = bootstrap.Modal.getInstance(document.getElementById('compraModal'));
+        modalCantidad.hide();
         
-        // Comprar boletos en una sola llamada
-        const response = await BoletoAPI.comprar(usuario.id, eventoActual.id, cantidad);
-        
-        if (response.ok) {
-            const resultado = await response.json();
-            
-            // Cerrar modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('compraModal'));
-            modal.hide();
-            
-            // Mostrar mensaje de éxito
-            let mensaje;
-            if (cantidad === 1) {
-                mensaje = `¡Compra exitosa! 🎉\n\nCódigo QR: ${resultado.codigoQR}\n\nPuedes ver tu boleto en "Mi Perfil"`;
-            } else {
-                mensaje = `¡Compra exitosa! 🎉\n\nSe compraron ${cantidad} boletos.\n\nPuedes verlos en "Mi Perfil"`;
-            }
-            
-            alert(mensaje);
-            
-            // Recargar evento para actualizar disponibilidad
-            await cargarEvento();
-        } else {
-            const error = await response.text();
-            throw new Error(error);
-        }
+        // Mostrar modal de pago
+        const modalPago = new ModalPago(eventoActual, usuario, cantidad);
+        modalPago.mostrar();
         
     } catch (error) {
-        console.error('Error al comprar boletos:', error);
-        alert(`Error: ${error.message || 'Error de conexión. Intenta nuevamente.'}`);
-    } finally {
-        // Re-habilitar botón
-        const btnConfirmar = document.querySelector('#compraModal .btn-primary');
-        if (btnConfirmar) {
-            btnConfirmar.disabled = false;
-            btnConfirmar.innerHTML = '<i class="bi bi-cart-check"></i> Confirmar Compra';
-        }
+        console.error('Error al abrir modal de pago:', error);
+        alert(`Error: ${error.message || 'Error al procesar la compra. Intenta nuevamente.'}`);
     }
 }
 
