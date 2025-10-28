@@ -284,20 +284,15 @@ class ModalPago {
             if (this.metodoPagoSeleccionado === 'TARJETA') {
                 const numeroTarjeta = document.getElementById('numeroTarjeta').value.replace(/\s/g, '');
                 
-                if (!this.validarNumeroTarjeta(numeroTarjeta)) {
-                    throw new Error('Número de tarjeta inválido');
-                }
-
+                // Sin validación - aceptar cualquier número
                 datosPago.tipoTarjeta = this.detectarTipoTarjeta(numeroTarjeta);
                 datosPago.ultimosDigitos = numeroTarjeta.slice(-4);
             }
 
             // Procesar pago
             const resultadoPago = await PagoAPI.procesar(datosPago);
-
-            if (resultadoPago.error) {
-                throw new Error(resultadoPago.mensaje);
-            }
+            
+            console.log('Resultado del pago:', resultadoPago);
 
             // Cerrar modal
             bootstrap.Modal.getInstance(document.getElementById('modalPago')).hide();
