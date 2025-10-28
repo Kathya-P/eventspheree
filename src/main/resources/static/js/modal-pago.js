@@ -314,30 +314,13 @@ class ModalPago {
     }
 
     validarNumeroTarjeta(numero) {
-        // Validación básica de longitud
+        // Validación simple: solo verificar que tenga entre 13 y 19 dígitos
         if (numero.length < 13 || numero.length > 19) {
             return false;
         }
 
-        // Algoritmo de Luhn
-        let sum = 0;
-        let isEven = false;
-        
-        for (let i = numero.length - 1; i >= 0; i--) {
-            let digit = parseInt(numero[i]);
-            
-            if (isEven) {
-                digit *= 2;
-                if (digit > 9) {
-                    digit -= 9;
-                }
-            }
-            
-            sum += digit;
-            isEven = !isEven;
-        }
-        
-        return sum % 10 === 0;
+        // Verificar que solo contenga números
+        return /^\d+$/.test(numero);
     }
 
     detectarTipoTarjeta(numero) {
