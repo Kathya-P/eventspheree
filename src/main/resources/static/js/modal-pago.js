@@ -326,15 +326,18 @@ class ModalPago {
     }
 
     mostrarResultadoPago(pago) {
-        const estadoClass = pago.estado === 'APROBADO' ? 'success' : 
-                           pago.estado === 'PENDIENTE' ? 'warning' : 'danger';
+        // Verificar que el pago tenga estado, si no asumimos APROBADO
+        const estado = pago.estado || 'APROBADO';
         
-        const icono = pago.estado === 'APROBADO' ? 'check-circle' : 
-                     pago.estado === 'PENDIENTE' ? 'clock' : 'x-circle';
+        const estadoClass = estado === 'APROBADO' ? 'success' : 
+                           estado === 'PENDIENTE' ? 'warning' : 'danger';
+        
+        const icono = estado === 'APROBADO' ? 'check-circle' : 
+                     estado === 'PENDIENTE' ? 'clock' : 'x-circle';
 
-        const mensaje = pago.estado === 'APROBADO' ? 
+        const mensaje = estado === 'APROBADO' ? 
             '¡Pago aprobado! Tu boleto ha sido generado con éxito.' :
-            pago.estado === 'PENDIENTE' ?
+            estado === 'PENDIENTE' ?
             'Pago pendiente de confirmación. Te notificaremos cuando se confirme.' :
             'Pago rechazado: ' + (pago.mensajeError || 'Intenta con otro método de pago');
 
@@ -345,7 +348,7 @@ class ModalPago {
                         <div class="modal-body text-center py-5">
                             <i class="bi bi-${icono} display-1 text-${estadoClass}"></i>
                             <h4 class="mt-4">${mensaje}</h4>
-                            ${pago.estado === 'APROBADO' ? `
+                            ${estado === 'APROBADO' ? `
                                 <p class="text-muted">Referencia: <code>${pago.referenciaPago}</code></p>
                                 <div class="d-grid gap-2 mt-4">
                                     <a href="mi-perfil.html" class="btn btn-primary">
@@ -373,7 +376,7 @@ class ModalPago {
         // Limpiar al cerrar
         document.getElementById('modalResultado').addEventListener('hidden.bs.modal', function() {
             this.remove();
-            if (pago.estado === 'APROBADO') {
+            if (estado === 'APROBADO') {
                 window.location.reload();
             }
         });
