@@ -4,8 +4,8 @@ const usuario = Utils.verificarSesion();
 // Cargar información del usuario
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('username').textContent = usuario.username;
-    document.getElementById('email').textContent = usuario.email;
-    document.getElementById('rol').textContent = usuario.rol;
+    document.getElementById('email').innerHTML = `<i class="bi bi-envelope me-2"></i>${usuario.email}`;
+    document.getElementById('rol').innerHTML = `<i class="bi bi-person-badge me-1"></i>${usuario.rol}`;
     
     // Generar iniciales para el avatar
     const iniciales = usuario.username.substring(0, 2).toUpperCase();

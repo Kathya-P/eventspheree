@@ -52,17 +52,12 @@ class ModalPago {
                             <div class="btn-group w-100 mb-4" role="group">
                                 <input type="radio" class="btn-check" name="metodoPago" id="metodoTarjeta" value="TARJETA" checked>
                                 <label class="btn btn-outline-primary" for="metodoTarjeta">
-                                    <i class="bi bi-credit-card"></i> Tarjeta
+                                    <i class="bi bi-credit-card"></i> Tarjeta de Crédito/Débito
                                 </label>
 
                                 <input type="radio" class="btn-check" name="metodoPago" id="metodoPayPal" value="PAYPAL">
                                 <label class="btn btn-outline-primary" for="metodoPayPal">
                                     <i class="bi bi-paypal"></i> PayPal
-                                </label>
-
-                                <input type="radio" class="btn-check" name="metodoPago" id="metodoTransferencia" value="TRANSFERENCIA">
-                                <label class="btn btn-outline-primary" for="metodoTransferencia">
-                                    <i class="bi bi-bank"></i> Transferencia
                                 </label>
                             </div>
 
@@ -153,39 +148,6 @@ class ModalPago {
         `;
     }
 
-    generarFormularioTransferencia() {
-        return `
-            <div id="formTransferencia">
-                <div class="alert alert-warning">
-                    <h6><i class="bi bi-info-circle"></i> Instrucciones de Transferencia</h6>
-                    <p class="mb-2">Por favor realiza la transferencia a:</p>
-                    <ul class="mb-0">
-                        <li><strong>Banco:</strong> Banco Nacional</li>
-                        <li><strong>Cuenta:</strong> 1234-5678-9012-3456</li>
-                        <li><strong>CLABE:</strong> 012345678901234567</li>
-                        <li><strong>Titular:</strong> EventSphere</li>
-                        <li><strong>Monto:</strong> ${Utils.formatearPrecio(this.montoTotal)}</li>
-                    </ul>
-                </div>
-                <div class="row g-3">
-                    <div class="col-12">
-                        <label class="form-label">Número de Referencia (opcional)</label>
-                        <input type="text" class="form-control" id="referenciaTransferencia" 
-                               placeholder="Referencia de tu transferencia">
-                        <small class="text-muted">
-                            Tu boleto se activará una vez confirmemos el pago (24-48 hrs)
-                        </small>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Email para Confirmación</label>
-                        <input type="email" class="form-control" id="emailConfirmacion" 
-                               value="${this.usuario.email}" required>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
     inicializarEventos() {
         // Cambiar formulario según método de pago
         document.querySelectorAll('input[name="metodoPago"]').forEach(radio => {
@@ -200,9 +162,6 @@ class ModalPago {
                         break;
                     case 'PAYPAL':
                         container.innerHTML = this.generarFormularioPayPal();
-                        break;
-                    case 'TRANSFERENCIA':
-                        container.innerHTML = this.generarFormularioTransferencia();
                         break;
                 }
             });
