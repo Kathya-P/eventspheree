@@ -137,58 +137,33 @@ async function cargarBoletos() {
                 }[boleto.estado] || { class: 'secondary', icon: 'bi-ticket', text: boleto.estado };
                 
                 html += `
-                    <div class="card mb-4 shadow-sm border-0">
-                        <div class="card-body p-4">
-                            <div class="row g-4">
-                                <div class="col-lg-8">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <span class="badge bg-${estadoConfig.class} fs-6 px-3 py-2 me-3">
-                                            <i class="${estadoConfig.icon}"></i> ${estadoConfig.text}
-                                        </span>
-                                        <h5 class="mb-0 text-dark">Boleto #${boleto.id}</h5>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <h4 class="text-success mb-0">${Utils.formatearPrecio(evento.precio)}</h4>
-                                    </div>
-                                    
-                                    <div class="text-muted">
-                                        <div class="mb-2">
-                                            <i class="bi bi-calendar3 text-primary"></i> 
-                                            <strong>Comprado:</strong> ${new Date(boleto.fechaCompra).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                        </div>
-                                        ${boleto.estado === 'USADO' ? `
-                                        <div class="mb-2">
-                                            <i class="bi bi-check2 text-info"></i> 
-                                            <strong>Usado:</strong> ${new Date(boleto.fechaUso).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                        </div>` : ''}
-                                        <div class="mb-2">
-                                            <i class="bi bi-qr-code text-secondary"></i> 
-                                            <strong>Código:</strong> <code class="bg-light px-2 py-1 rounded">${boleto.codigoQR}</code>
-                                        </div>
-                                    </div>
+                    <div class="list-group-item border-start border-4 border-${estadoConfig.class} mb-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-1">
+                                    <span class="badge bg-${estadoConfig.class} me-2">
+                                        <i class="${estadoConfig.icon}"></i> ${estadoConfig.text}
+                                    </span>
+                                    <strong>Boleto #${boleto.id}</strong>
+                                    <span class="text-success fw-bold ms-3">${Utils.formatearPrecio(evento.precio)}</span>
                                 </div>
-                                
-                                <div class="col-lg-4">
-                                    <div class="text-center">
-                                        <div class="bg-light p-3 rounded mb-3">
-                                            <img id="qr-${boleto.id}" src="" alt="QR Code" 
-                                                 class="img-fluid" style="max-width: 200px; display: none;">
-                                            <div id="qr-loading-${boleto.id}">
-                                                <div class="spinner-border text-primary" role="status"></div>
-                                                <p class="text-muted mt-2 small">Cargando QR...</p>
-                                            </div>
-                                        </div>
-                                        <div class="d-grid gap-2">
-                                            <button class="btn btn-primary" onclick="descargarQR(${boleto.id}, '${boleto.codigoQR}')">
-                                                <i class="bi bi-download"></i> Descargar QR
-                                            </button>
-                                            <button class="btn btn-outline-primary" onclick="verQRGrande(${boleto.id})">
-                                                <i class="bi bi-arrows-fullscreen"></i> Ver Grande
-                                            </button>
-                                        </div>
-                                    </div>
+                                <small class="text-muted d-block">
+                                    <i class="bi bi-calendar3"></i> ${new Date(boleto.fechaCompra).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                    ${boleto.estado === 'USADO' ? ` | <i class="bi bi-check2"></i> Usado: ${new Date(boleto.fechaUso).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}` : ''}
+                                </small>
+                                <small class="text-muted"><i class="bi bi-qr-code"></i> ${boleto.codigoQR}</small>
+                            </div>
+                            <div class="text-end ms-3">
+                                <img id="qr-${boleto.id}" src="" alt="QR" 
+                                     style="width: 60px; height: 60px; display: none; cursor: pointer;" 
+                                     onclick="verQRGrande(${boleto.id})" 
+                                     title="Click para ver grande">
+                                <div id="qr-loading-${boleto.id}" class="text-center">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                                 </div>
+                                <button class="btn btn-sm btn-outline-primary mt-2 w-100" onclick="descargarQR(${boleto.id}, '${boleto.codigoQR}')">
+                                    <i class="bi bi-download"></i> Descargar
+                                </button>
                             </div>
                         </div>
                     </div>
