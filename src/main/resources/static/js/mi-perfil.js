@@ -127,89 +127,94 @@ async function cargarBoletos() {
                         <!-- Lista de boletos colapsable -->
                         <div class="collapse" id="boletos-${evento.id}">
                             <div class="card-body border-top pt-3">
-                                <div class="accordion" id="accordion-${evento.id}">
+                                <div class="accordion accordion-flush" id="accordion-${evento.id}">
             `;
             
             boletosEvento.forEach((boleto, index) => {
-                const estadoClass = {
-                    'ACTIVO': 'success',
-                    'USADO': 'info',
-                    'CANCELADO': 'danger'
-                }[boleto.estado] || 'secondary';
-                
-                const estadoIcon = {
-                    'ACTIVO': 'bi-check-circle-fill',
-                    'USADO': 'bi-check2-all',
-                    'CANCELADO': 'bi-x-circle-fill'
-                }[boleto.estado] || 'bi-ticket';
+                const estadoConfig = {
+                    'ACTIVO': { class: 'success', icon: 'bi-check-circle-fill', text: 'Activo' },
+                    'USADO': { class: 'info', icon: 'bi-check2-all', text: 'Usado' },
+                    'CANCELADO': { class: 'danger', icon: 'bi-x-circle-fill', text: 'Cancelado' }
+                }[boleto.estado] || { class: 'secondary', icon: 'bi-ticket', text: boleto.estado };
                 
                 html += `
-                    <div class="accordion-item border-0 mb-2 shadow-sm">
+                    <div class="accordion-item bg-white mb-2 border rounded">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" 
+                            <button class="accordion-button collapsed bg-light" type="button" 
                                     data-bs-toggle="collapse" data-bs-target="#boleto-${boleto.id}">
                                 <div class="d-flex justify-content-between align-items-center w-100 me-3">
                                     <div>
-                                        <span class="badge bg-${estadoClass} me-2">
-                                            <i class="${estadoIcon}"></i> ${boleto.estado}
+                                        <span class="badge bg-${estadoConfig.class} me-2">
+                                            <i class="${estadoConfig.icon}"></i> ${estadoConfig.text}
                                         </span>
-                                        <strong>Boleto #${boleto.id}</strong>
-                                        <small class="text-muted ms-2">
-                                            Comprado: ${Utils.formatearFecha(boleto.fechaCompra)}
-                                        </small>
+                                        <strong class="text-dark">Boleto #${boleto.id}</strong>
                                     </div>
-                                    <div>
-                                        <strong class="text-success">${Utils.formatearPrecio(evento.precio)}</strong>
+                                    <div class="text-end">
+                                        <div class="text-success fw-bold">${Utils.formatearPrecio(evento.precio)}</div>
+                                        <small class="text-muted">Comprado: ${new Date(boleto.fechaCompra).toLocaleDateString('es-ES')}</small>
                                     </div>
                                 </div>
                             </button>
                         </h2>
                         <div id="boleto-${boleto.id}" class="accordion-collapse collapse" 
                              data-bs-parent="#accordion-${evento.id}">
-                            <div class="accordion-body">
-                                <div class="row">
-                                    <div class="col-md-8">
-                                        <h6 class="text-primary mb-3">
-                                            <i class="bi bi-info-circle"></i> Detalles del Boleto
-                                        </h6>
-                                        <div class="mb-2">
-                                            <small class="text-muted">Código QR:</small>
-                                            <code class="ms-2">${boleto.codigoQR}</code>
-                                        </div>
-                                        <div class="mb-2">
-                                            <small class="text-muted">Fecha de compra:</small>
-                                            <span class="ms-2">${Utils.formatearFecha(boleto.fechaCompra)}</span>
-                                        </div>
-                                        ${boleto.estado === 'USADO' ? `
-                                            <div class="mb-2">
-                                                <small class="text-muted">Fecha de uso:</small>
-                                                <span class="ms-2">${Utils.formatearFecha(boleto.fechaUso)}</span>
-                                            </div>
-                                        ` : ''}
-                                        ${boleto.estado === 'ACTIVO' ? `
-                                            <button class="btn btn-sm btn-outline-secondary mt-2" onclick="cancelarBoleto(${boleto.id})">
-                                                <i class="bi bi-x-circle"></i> Cancelar Boleto
-                                            </button>
-                                        ` : ''}
-                                    </div>
-                                    <div class="col-md-4 text-center">
-                                        <div class="qr-code-container p-3 bg-light rounded">
-                                            <h6 class="text-muted mb-3">Código QR</h6>
-                                            <img id="qr-${boleto.id}" src="" alt="QR Code" 
-                                                 style="width: 150px; height: 150px; display: none;" 
-                                                 class="mb-2 border rounded">
-                                            <div id="qr-loading-${boleto.id}" class="mb-2">
-                                                <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                                    <span class="visually-hidden">Cargando...</span>
+                            <div class="accordion-body bg-white">
+                                <div class="row g-4">
+                                    <!-- Detalles del boleto -->
+                                    <div class="col-md-6">
+                                        <div class="card border-0 bg-light h-100">
+                                            <div class="card-body">
+                                                <h6 class="card-title text-dark mb-3">
+                                                    <i class="bi bi-info-circle text-primary"></i> Detalles del Boleto
+                                                </h6>
+                                                <div class="mb-3">
+                                                    <label class="text-muted small d-block mb-1">Código QR:</label>
+                                                    <code class="bg-white px-2 py-1 rounded border d-inline-block">${boleto.codigoQR}</code>
                                                 </div>
+                                                <div class="mb-3">
+                                                    <label class="text-muted small d-block mb-1">Fecha de compra:</label>
+                                                    <span class="text-dark">${Utils.formatearFecha(boleto.fechaCompra)}</span>
+                                                </div>
+                                                ${boleto.estado === 'USADO' ? `
+                                                    <div class="mb-3">
+                                                        <label class="text-muted small d-block mb-1">Fecha de uso:</label>
+                                                        <span class="text-dark">${Utils.formatearFecha(boleto.fechaUso)}</span>
+                                                    </div>
+                                                ` : ''}
+                                                ${boleto.estado === 'ACTIVO' ? `
+                                                    <button class="btn btn-outline-danger btn-sm mt-2" onclick="cancelarBoleto(${boleto.id})">
+                                                        <i class="bi bi-x-circle"></i> Cancelar Boleto
+                                                    </button>
+                                                ` : ''}
                                             </div>
-                                            <div class="d-grid gap-2 mt-3">
-                                                <button class="btn btn-sm btn-primary" onclick="descargarQR(${boleto.id}, '${boleto.codigoQR}')">
-                                                    <i class="bi bi-download"></i> Descargar
-                                                </button>
-                                                <button class="btn btn-sm btn-outline-primary" onclick="verQRGrande(${boleto.id})">
-                                                    <i class="bi bi-arrows-fullscreen"></i> Ver Grande
-                                                </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Código QR -->
+                                    <div class="col-md-6">
+                                        <div class="card border-0 bg-light h-100">
+                                            <div class="card-body text-center">
+                                                <h6 class="card-title text-dark mb-3">
+                                                    <i class="bi bi-qr-code text-primary"></i> Código QR
+                                                </h6>
+                                                <div class="bg-white p-3 rounded mb-3 d-inline-block">
+                                                    <img id="qr-${boleto.id}" src="" alt="QR Code" 
+                                                         style="width: 180px; height: 180px; display: none;">
+                                                    <div id="qr-loading-${boleto.id}">
+                                                        <div class="spinner-border text-primary" role="status">
+                                                            <span class="visually-hidden">Cargando...</span>
+                                                        </div>
+                                                        <p class="text-muted small mt-2">Cargando QR...</p>
+                                                    </div>
+                                                </div>
+                                                <div class="d-grid gap-2">
+                                                    <button class="btn btn-primary" onclick="descargarQR(${boleto.id}, '${boleto.codigoQR}')">
+                                                        <i class="bi bi-download"></i> Descargar QR
+                                                    </button>
+                                                    <button class="btn btn-outline-primary" onclick="verQRGrande(${boleto.id})">
+                                                        <i class="bi bi-arrows-fullscreen"></i> Ver en Grande
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
