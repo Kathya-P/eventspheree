@@ -148,6 +148,42 @@ const BoletoAPI = {
     }
 };
 
+// Funciones para el API de Pagos
+const PagoAPI = {
+    procesar: async (datosPago) => {
+        const response = await fetch(`${API_BASE_URL}/api/pagos/procesar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datosPago)
+        });
+        return await response.json();
+    },
+    
+    buscarPorReferencia: async (referencia) => {
+        const response = await fetch(`${API_BASE_URL}/api/pagos/referencia/${referencia}`);
+        return await response.json();
+    },
+    
+    listarPorUsuario: async (usuarioId) => {
+        const response = await fetch(`${API_BASE_URL}/api/pagos/usuario/${usuarioId}`);
+        return await response.json();
+    },
+    
+    confirmar: async (pagoId) => {
+        const response = await fetch(`${API_BASE_URL}/api/pagos/${pagoId}/confirmar`, {
+            method: 'PUT'
+        });
+        return await response.json();
+    },
+    
+    cancelar: async (pagoId) => {
+        const response = await fetch(`${API_BASE_URL}/api/pagos/${pagoId}/cancelar`, {
+            method: 'PUT'
+        });
+        return await response.json();
+    }
+};
+
 // Funciones para el API de Reseñas
 const ResenaAPI = {
     crear: async (usuarioId, eventoId, calificacion, comentario) => {

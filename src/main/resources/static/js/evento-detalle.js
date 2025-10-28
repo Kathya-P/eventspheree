@@ -146,57 +146,15 @@ async function confirmarCompra() {
         return;
     }
     
-    const total = eventoActual.precio * cantidad;
-    const confirmMsg = `¿Confirmar compra de ${cantidad} boleto(s)?\n\nTotal: ${Utils.formatearPrecio(total)}`;
-    
-    if (!confirm(confirmMsg)) {
-        return;
+    // Cerrar modal de cantidad
+    const modalCantidad = bootstrap.Modal.getInstance(document.getElementById('compraModal'));
+    if (modalCantidad) {
+        modalCantidad.hide();
     }
     
-    try {
-        // Deshabilitar botón para evitar doble click
-        const btnConfirmar = event.target;
-        btnConfirmar.disabled = true;
-        btnConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
-        
-        // Comprar boletos en una sola llamada
-        const response = await BoletoAPI.comprar(usuario.id, eventoActual.id, cantidad);
-        
-        if (response.ok) {
-            const resultado = await response.json();
-            
-            // Cerrar modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('compraModal'));
-            modal.hide();
-            
-            // Mostrar mensaje de éxito
-            let mensaje;
-            if (cantidad === 1) {
-                mensaje = `¡Compra exitosa! 🎉\n\nCódigo QR: ${resultado.codigoQR}\n\nPuedes ver tu boleto en "Mi Perfil"`;
-            } else {
-                mensaje = `¡Compra exitosa! 🎉\n\nSe compraron ${cantidad} boletos.\n\nPuedes verlos en "Mi Perfil"`;
-            }
-            
-            alert(mensaje);
-            
-            // Recargar evento para actualizar disponibilidad
-            await cargarEvento();
-        } else {
-            const error = await response.text();
-            throw new Error(error);
-        }
-        
-    } catch (error) {
-        console.error('Error al comprar boletos:', error);
-        alert(`Error: ${error.message || 'Error de conexión. Intenta nuevamente.'}`);
-    } finally {
-        // Re-habilitar botón
-        const btnConfirmar = document.querySelector('#compraModal .btn-primary');
-        if (btnConfirmar) {
-            btnConfirmar.disabled = false;
-            btnConfirmar.innerHTML = '<i class="bi bi-cart-check"></i> Confirmar Compra';
-        }
-    }
+    // Abrir modal de pago
+    const modalPago = new ModalPago(eventoActual, usuario, cantidad);
+    modalPago.mostrar();
 }
 
 // Cargar reseñas
