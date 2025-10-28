@@ -131,9 +131,39 @@ public class PagoService {
     }
     
     /**
+     * Buscar pago por referencia (sin Optional)
+     */
+    public Pago obtenerPagoPorReferencia(String referencia) {
+        return pagoRepository.findByReferenciaPago(referencia)
+                .orElseThrow(() -> new RuntimeException("Pago no encontrado con referencia: " + referencia));
+    }
+    
+    /**
+     * Obtener pago por ID
+     */
+    public Pago obtenerPagoPorId(Long id) {
+        return pagoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pago no encontrado con ID: " + id));
+    }
+    
+    /**
      * Listar pagos de un usuario
      */
     public List<Pago> listarPorUsuario(Long usuarioId) {
+        return pagoRepository.findByUsuarioId(usuarioId);
+    }
+    
+    /**
+     * Obtener pagos de un usuario
+     */
+    public List<Pago> obtenerPagosPorUsuario(Long usuarioId) {
+        return pagoRepository.findByUsuarioId(usuarioId);
+    }
+    
+    /**
+     * Obtener historial de pagos
+     */
+    public List<Pago> obtenerHistorialPagos(Long usuarioId) {
         return pagoRepository.findByUsuarioId(usuarioId);
     }
     

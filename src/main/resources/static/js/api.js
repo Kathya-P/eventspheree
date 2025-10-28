@@ -282,6 +282,38 @@ const CategoriaAPI = {
     }
 };
 
+// Funciones para el API de Pagos
+const PagoAPI = {
+    procesar: async (datosPago) => {
+        const response = await fetch(`${API_BASE_URL}/pagos/procesar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datosPago)
+        });
+        return await response.json();
+    },
+    
+    listarPorUsuario: async (usuarioId) => {
+        const response = await fetch(`${API_BASE_URL}/pagos/usuario/${usuarioId}`);
+        return await response.json();
+    },
+    
+    buscarPorReferencia: async (referencia) => {
+        const response = await fetch(`${API_BASE_URL}/pagos/referencia/${referencia}`);
+        return await response.json();
+    },
+    
+    obtenerHistorial: async (usuarioId) => {
+        const response = await fetch(`${API_BASE_URL}/pagos/historial/${usuarioId}`);
+        return await response.json();
+    },
+    
+    verificarEstado: async (id) => {
+        const response = await fetch(`${API_BASE_URL}/pagos/${id}/estado`);
+        return await response.json();
+    }
+};
+
 // Utilidades
 const Utils = {
     formatearFecha: (fechaISO) => {

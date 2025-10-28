@@ -7,6 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('email').textContent = usuario.email;
     document.getElementById('rol').textContent = usuario.rol;
     
+    // Generar iniciales para el avatar
+    const iniciales = usuario.username.substring(0, 2).toUpperCase();
+    document.getElementById('avatarInitials').textContent = iniciales;
+    
     cargarMisEventos();
     cargarBoletos();
     cargarEstadisticas();
@@ -117,9 +121,9 @@ async function cargarBoletos() {
             
             boletosEvento.forEach((boleto, index) => {
                 const estadoClass = {
-                    'ACTIVO': 'primary',
-                    'USADO': 'secondary',
-                    'CANCELADO': 'secondary'
+                    'ACTIVO': 'success',
+                    'USADO': 'info',
+                    'CANCELADO': 'danger'
                 }[boleto.estado] || 'secondary';
                 
                 const estadoIcon = {
