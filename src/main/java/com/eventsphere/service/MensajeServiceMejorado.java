@@ -101,7 +101,7 @@ public class MensajeServiceMejorado {
         
         // Verificar que el usuario sea el autor o el organizador del evento
         boolean esAutor = mensaje.getUsuario().getId().equals(usuarioId);
-        boolean esOrganizador = mensaje.getEvento().getUsuario().getId().equals(usuarioId);
+        boolean esOrganizador = mensaje.getEvento().getOrganizador().getId().equals(usuarioId);
         
         if (!esAutor && !esOrganizador) {
             throw new RuntimeException("No tienes permiso para eliminar este mensaje");
@@ -159,7 +159,7 @@ public class MensajeServiceMejorado {
                 .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
         
         // Verificar que sea el organizador
-        if (!evento.getUsuario().getId().equals(usuarioId)) {
+        if (!evento.getOrganizador().getId().equals(usuarioId)) {
             throw new RuntimeException("Solo el organizador puede ver mensajes eliminados");
         }
         
