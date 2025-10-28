@@ -70,7 +70,7 @@ public class PagoService {
         }
         
         // Siempre aprobar el pago
-        pago.setEstado("APROBADO")
+        pago.setEstado("APROBADO");
         
         // Guardar pago
         Pago pagoGuardado = pagoRepository.save(pago);
