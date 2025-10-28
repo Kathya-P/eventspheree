@@ -108,17 +108,17 @@ async function cargarBoletos() {
                 }[boleto.estado] || { class: 'secondary', icon: 'bi-ticket', text: boleto.estado };
                 
                 html += `
-                    <div class="list-group-item border-start border-4 border-${estadoConfig.class} mb-2">
+                    <div class="bg-white border border-${estadoConfig.class} border-start border-4 rounded p-3 mb-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="flex-grow-1">
-                                <div class="d-flex align-items-center mb-1">
+                                <div class="d-flex align-items-center mb-2">
                                     <span class="badge bg-${estadoConfig.class} me-2">
                                         <i class="${estadoConfig.icon}"></i> ${estadoConfig.text}
                                     </span>
                                     <strong>Boleto #${boleto.id}</strong>
                                     <span class="text-success fw-bold ms-3">${Utils.formatearPrecio(evento.precio)}</span>
                                 </div>
-                                <small class="text-muted d-block">
+                                <small class="text-muted d-block mb-1">
                                     <i class="bi bi-calendar3"></i> ${new Date(boleto.fechaCompra).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                     ${boleto.estado === 'USADO' ? ` | <i class="bi bi-check2"></i> Usado: ${new Date(boleto.fechaUso).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}` : ''}
                                 </small>
