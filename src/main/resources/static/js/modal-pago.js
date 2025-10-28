@@ -336,7 +336,7 @@ class ModalPago {
                      estado === 'PENDIENTE' ? 'clock' : 'x-circle';
 
         const mensaje = estado === 'APROBADO' ? 
-            '¡Pago aprobado! Tu boleto ha sido generado con éxito.' :
+            '¡Compra realizada con éxito!' :
             estado === 'PENDIENTE' ?
             'Pago pendiente de confirmación. Te notificaremos cuando se confirme.' :
             'Pago rechazado: ' + (pago.mensajeError || 'Intenta con otro método de pago');
@@ -349,9 +349,8 @@ class ModalPago {
                             <i class="bi bi-${icono} display-1 text-${estadoClass}"></i>
                             <h4 class="mt-4">${mensaje}</h4>
                             ${estado === 'APROBADO' ? `
-                                <p class="text-muted">Referencia: <code>${pago.referenciaPago}</code></p>
                                 <div class="d-grid gap-2 mt-4">
-                                    <a href="mi-perfil.html" class="btn btn-primary">
+                                    <a href="mi-perfil.html" class="btn btn-primary btn-lg">
                                         <i class="bi bi-ticket"></i> Ver Mis Boletos
                                     </a>
                                     <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
