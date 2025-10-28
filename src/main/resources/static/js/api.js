@@ -235,34 +235,59 @@ const ResenaAPI = {
 
 // Funciones para el API de Mensajes
 const MensajeAPI = {
-    enviar: async (usuarioId, eventoId, contenido) => {
-        const params = new URLSearchParams({
-            usuarioId,
-            eventoId,
-            contenido
+    enviar: async (usuarioId, eventoId, contenido, respondeAId = null) => {
+        const response = await fetch(`${API_BASE_URL}/chat/enviar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                usuarioId,
+                eventoId,
+                contenido,
+                respondeAId
+            })
         });
-        
-        const response = await fetch(`${API_BASE_URL}/mensajes?${params}`, {
-            method: 'POST'
-        });
-        return response;
+        return await response.json();
     },
     
     listarPorEvento: async (eventoId) => {
-        const response = await fetch(`${API_BASE_URL}/mensajes/evento/${eventoId}`);
+        const response = await fetch(`${API_BASE_URL}/chat/evento/${eventoId}`);
         return await response.json();
     },
     
-    buscarPorId: async (id) => {
-        const response = await fetch(`${API_BASE_URL}/mensajes/${id}`);
+    editar: async (mensajeId, usuarioId, contenido) => {
+        const response = await fetch(`${API_BASE_URL}/chat/editar/${mensajeId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                usuarioId,
+                contenido
+            })
+        });
         return await response.json();
     },
     
-    eliminar: async (id) => {
-        const response = await fetch(`${API_BASE_URL}/mensajes/${id}`, {
+    eliminar: async (mensajeId, usuarioId) => {
+        const response = await fetch(`${API_BASE_URL}/chat/eliminar/${mensajeId}?usuarioId=${usuarioId}`, {
             method: 'DELETE'
         });
-        return response;
+        return await response.json();
+    },
+    
+    reaccionar: async (mensajeId, usuarioId, emoji) => {
+        const response = await fetch(`${API_BASE_URL}/chat/reaccionar/${mensajeId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                usuarioId,
+                emoji
+            })
+        });
+        return await response.json();
+    },
+    
+    contar: async (eventoId) => {
+        const response = await fetch(`${API_BASE_URL}/chat/evento/${eventoId}/contar`);
+        return await response.json();
     }
 };
 
@@ -330,6 +355,22 @@ const Utils = {
             minute: '2-digit'
         };
         return fecha.toLocaleDateString('es-ES', opciones);
+    },
+    
+    formatearFechaRelativa: (fechaISO) => {
+        const fecha = new Date(fechaISO);
+        const ahora = new Date();
+        const diffMs = ahora - fecha;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+        
+        if (diffMins < 1) return 'Ahora';
+        if (diffMins < 60) return `Hace ${diffMins} min`;
+        if (diffHours < 24) return `Hace ${diffHours}h`;
+        if (diffDays < 7) return `Hace ${diffDays}d`;
+        
+        return fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
     },
     
     formatearPrecio: (precio) => {

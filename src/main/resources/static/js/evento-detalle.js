@@ -269,6 +269,33 @@ document.getElementById('resenaForm')?.addEventListener('submit', async (e) => {
 });
 
 // Cargar mensajes del chat
+// ============================================
+// CHAT MEJORADO - INICIALIZACIÓN
+// ============================================
+
+// Inicializar chat mejorado cuando se muestra la pestaña
+document.getElementById('chat-tab')?.addEventListener('shown.bs.tab', async function () {
+    const usuario = Utils.obtenerUsuarioLocal();
+    
+    if (!usuario) {
+        document.getElementById('chatContainer').innerHTML = `
+            <div class="text-center py-5">
+                <i class="bi bi-lock" style="font-size: 48px;" class="text-muted"></i>
+                <p class="text-muted mt-3">Debes iniciar sesión para ver el chat</p>
+                <a href="login.html" class="btn btn-primary">Iniciar Sesión</a>
+            </div>
+        `;
+        return;
+    }
+    
+    // Inicializar chat solo una vez
+    if (!window.chat) {
+        window.chat = new ChatMejorado(eventoId, usuario);
+        await window.chat.inicializar();
+    }
+});
+
+/* CÓDIGO VIEJO COMENTADO - Se reemplaza con ChatMejorado
 async function cargarMensajes() {
     try {
         const mensajes = await MensajeAPI.listarPorEvento(eventoId);
@@ -350,6 +377,7 @@ document.getElementById('chatForm')?.addEventListener('submit', async (e) => {
         alert('Error de conexión. Intenta nuevamente.');
     }
 });
+*/
 
 // ==================== FUNCIONALIDAD DE FOTOS ====================
 
