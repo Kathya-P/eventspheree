@@ -59,53 +59,25 @@ public class PagoService {
         // Generar referencia única
         pago.setReferenciaPago(generarReferenciaPago());
         
-        // Procesar según método de pago
-        boolean pagoExitoso = false;
+        // Procesar según método de pago - SIEMPRE APROBADO para pruebas
+        boolean pagoExitoso = true;
         String mensajeError = null;
         
-        switch (metodoPago.toUpperCase()) {
-            case "TARJETA":
-                pago.setTipoTarjeta(tipoTarjeta);
-                pago.setUltimosDigitos(ultimosDigitos);
-                pagoExitoso = validarPagoTarjeta(ultimosDigitos, tipoTarjeta);
-                if (!pagoExitoso) {
-                    mensajeError = "Tarjeta rechazada - Fondos insuficientes";
-                }
-                break;
-                
-            case "PAYPAL":
-                pagoExitoso = validarPagoPayPal(email);
-                if (!pagoExitoso) {
-                    mensajeError = "Cuenta PayPal no válida o sin fondos";
-                }
-                break;
-                
-            case "TRANSFERENCIA":
-                pagoExitoso = true; // Las transferencias se marcan como PENDIENTE
-                pago.setEstado("PENDIENTE");
-                mensajeError = "Transferencia pendiente de verificación";
-                break;
-                
-            default:
-                throw new RuntimeException("Método de pago no válido");
+        // Guardar información según tipo de pago
+        if (metodoPago.equalsIgnoreCase("TARJETA")) {
+            pago.setTipoTarjeta(tipoTarjeta);
+            pago.setUltimosDigitos(ultimosDigitos);
         }
         
-        // Actualizar estado
-        if (pagoExitoso && !metodoPago.equalsIgnoreCase("TRANSFERENCIA")) {
-            pago.setEstado("APROBADO");
-        } else if (!pagoExitoso) {
-            pago.setEstado("RECHAZADO");
-            pago.setMensajeError(mensajeError);
-        }
+        // Siempre aprobar el pago
+        pago.setEstado("APROBADO")
         
         // Guardar pago
         Pago pagoGuardado = pagoRepository.save(pago);
         
-        // Si el pago fue aprobado, actualizar el boleto
-        if ("APROBADO".equals(pago.getEstado())) {
-            boleto.setEstado("ACTIVO");
-            boletoRepository.save(boleto);
-        }
+        // Activar el boleto automáticamente
+        boleto.setEstado("ACTIVO");
+        boletoRepository.save(boleto);
         
         return pagoGuardado;
     }
