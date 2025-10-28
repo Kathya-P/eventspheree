@@ -157,6 +157,18 @@ public class EventoController {
                 .orElse(ResponseEntity.notFound().build());
     }
     
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<List<Evento>> listarEventosPorUsuario(@PathVariable Long usuarioId) {
+        try {
+            Usuario usuario = usuarioRepository.findById(usuarioId)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            List<Evento> eventos = eventoService.listarPorOrganizador(usuario);
+            return ResponseEntity.ok(eventos);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
     @GetMapping("/proximos")
     public ResponseEntity<List<Evento>> listarEventosProximos() {
         return ResponseEntity.ok(eventoService.listarEventosProximos());

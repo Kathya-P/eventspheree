@@ -38,6 +38,10 @@ function mostrarEvento(evento) {
     const imagenUrl = evento.imagenUrl || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&h=400&fit=crop';
     const disponibles = evento.capacidad - evento.entradasVendidas;
     
+    // Verificar si el usuario actual es el creador del evento
+    const usuario = Utils.obtenerUsuarioLocal();
+    const esEventoPropio = usuario && evento.organizador && evento.organizador.id === usuario.id;
+    
     document.getElementById('eventoImagen').src = imagenUrl;
     document.getElementById('eventoTitulo').textContent = evento.titulo;
     document.getElementById('eventoDescripcion').textContent = evento.descripcion || 'Sin descripción';
@@ -48,6 +52,20 @@ function mostrarEvento(evento) {
     document.getElementById('eventoDisponibilidad').innerHTML = `
         <span class="text-success fw-bold">${disponibles}</span> de ${evento.capacidad} disponibles
     `;
+    
+    // Si es evento propio, mostrar badge y deshabilitar compra
+    const btnComprar = document.querySelector('[data-bs-target="#compraModal"]');
+    if (esEventoPropio && btnComprar) {
+        btnComprar.outerHTML = `
+            <div class="alert alert-info mb-0">
+                <i class="bi bi-info-circle"></i> <strong>Este es tu evento</strong><br>
+                <small>No puedes comprar boletos para tu propio evento.</small>
+            </div>
+            <a href="editar-evento.html?id=${evento.id}" class="btn btn-outline-primary w-100 mt-2">
+                <i class="bi bi-pencil"></i> Editar Evento
+            </a>
+        `;
+    }
     
     document.title = `${evento.titulo} - EventSphere`;
 }

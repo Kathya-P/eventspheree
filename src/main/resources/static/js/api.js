@@ -96,6 +96,11 @@ const EventoAPI = {
             method: 'DELETE'
         });
         return response;
+    },
+    
+    listarPorUsuario: async (usuarioId) => {
+        const response = await fetch(`${API_BASE_URL}/eventos/usuario/${usuarioId}`);
+        return await response.json();
     }
 };
 

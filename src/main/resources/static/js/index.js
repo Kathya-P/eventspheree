@@ -34,6 +34,9 @@ function mostrarElementosSegunAutenticacion() {
         document.getElementById('registerBanner')?.classList.remove('d-none');
         document.getElementById('eventosSubtitle')?.classList.remove('d-none');
         
+        // Ocultar sección de mis eventos
+        document.getElementById('misEventosSection')?.classList.add('d-none');
+        
         // Cambiar título
         const title = document.getElementById('eventosTitle');
         if (title) title.textContent = 'Vista Previa de Eventos';
@@ -43,6 +46,10 @@ function mostrarElementosSegunAutenticacion() {
         document.getElementById('benefitsSection')?.classList.add('d-none');
         document.getElementById('registerBanner')?.classList.add('d-none');
         document.getElementById('eventosSubtitle')?.classList.add('d-none');
+        
+        // Mostrar sección de mis eventos
+        document.getElementById('misEventosSection')?.classList.remove('d-none');
+        cargarMisEventos();
     }
 }
 
@@ -194,10 +201,23 @@ function mostrarEventos(eventos) {
     
     console.log('mostrarEventos llamado con', eventos.length, 'eventos');
     
-    // Limitar a 6 eventos si el usuario NO está logueado
+    // Si el usuario está logueado, excluir sus propios eventos
     let eventosAMostrar = eventos;
-    if (!isUsuarioLogueado && eventos.length > 6) {
-        eventosAMostrar = eventos.slice(0, 6);
+    if (isUsuarioLogueado) {
+        const usuario = Utils.obtenerUsuarioLocal();
+        console.log('👤 Usuario logueado:', usuario.id);
+        console.log('📋 Primer evento:', eventos[0]);
+        eventosAMostrar = eventos.filter(e => {
+            const esPropio = e.organizador && e.organizador.id === usuario.id;
+            console.log(`Evento "${e.titulo}" - Organizador:`, e.organizador?.id, '- Es propio:', esPropio);
+            return !esPropio;
+        });
+        console.log('✅ Usuario logueado - Excluyendo eventos propios. Mostrando', eventosAMostrar.length, 'de', eventos.length, 'eventos');
+    }
+    
+    // Limitar a 6 eventos si el usuario NO está logueado
+    if (!isUsuarioLogueado && eventosAMostrar.length > 6) {
+        eventosAMostrar = eventosAMostrar.slice(0, 6);
         console.log('👁️ Usuario no logueado - Limitando a 6 eventos');
     }
     
@@ -243,14 +263,42 @@ function mostrarEventos(eventos) {
 }
 
 // Crear tarjeta vista grid
-function crearTarjetaGrid(evento) {
+function crearTarjetaGrid(evento, esEventoPropio = false) {
     const imagenUrl = evento.imagenUrl || `https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=250&fit=crop&q=80`;
     const disponibles = evento.capacidad - evento.entradasVendidas;
     const porcentajeVendido = Math.round((evento.entradasVendidas / evento.capacidad) * 100);
     
+    // Badge especial para eventos propios
+    const badgePropio = esEventoPropio ? `
+        <span class="badge bg-success position-absolute top-0 end-0 m-2" style="z-index: 10;">
+            <i class="bi bi-person-badge"></i> Tu Evento
+        </span>
+    ` : '';
+    
+    // Botón diferente para eventos propios
+    const botonAccion = esEventoPropio ? `
+        <div class="d-grid gap-2">
+            <a href="editar-evento.html?id=${evento.id}" 
+                class="btn btn-outline-primary fw-semibold">
+                <i class="bi bi-pencil"></i> Editar Evento
+            </a>
+            <a href="evento-detalle.html?id=${evento.id}" 
+                class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-eye"></i> Ver Detalles
+            </a>
+        </div>
+    ` : `
+        <a href="evento-detalle.html?id=${evento.id}" 
+            class="btn w-100 text-white fw-semibold" 
+            style="background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%); border: none; padding: 12px;">
+            Ver Detalles
+        </a>
+    `;
+    
     return `
         <div class="col-lg-4 col-md-6">
-                <div class="card h-100 border-0 shadow-sm">
+            <div class="card h-100 border-0 shadow-sm position-relative">
+                ${badgePropio}
                 <img src="${imagenUrl}" class="card-img-top" alt="${evento.titulo}" 
                      style="height: 200px; object-fit: cover;">
                 <div class="card-body d-flex flex-column p-4">
@@ -291,11 +339,7 @@ function crearTarjetaGrid(evento) {
                             </div>
                         </div>
                         
-                                <a href="evento-detalle.html?id=${evento.id}" 
-                                    class="btn w-100 mt-3 text-white fw-semibold" 
-                                    style="background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%); border: none; padding: 12px;">
-                            Ver Detalles
-                        </a>
+                        ${botonAccion}
                     </div>
                 </div>
             </div>
@@ -431,6 +475,37 @@ function mostrarSpinner(mostrar) {
     } else {
         spinner.classList.add('d-none');
         container.classList.remove('d-none');
+    }
+}
+
+// Cargar eventos del usuario logueado
+async function cargarMisEventos() {
+    const usuario = Utils.obtenerUsuarioLocal();
+    if (!usuario) return;
+    
+    try {
+        const response = await fetch(`${Utils.getApiUrl()}/api/eventos/usuario/${usuario.id}`);
+        if (!response.ok) throw new Error('Error al cargar mis eventos');
+        
+        const misEventos = await response.json();
+        const container = document.getElementById('misEventosGrid');
+        
+        if (misEventos.length === 0) {
+            container.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        Aún no has creado ningún evento. 
+                        <a href="crear-evento.html" class="alert-link">¡Crea tu primer evento aquí!</a>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = misEventos.map(evento => crearTarjetaGrid(evento, true)).join('');
+    } catch (error) {
+        console.error('Error al cargar mis eventos:', error);
     }
 }
 

@@ -7,112 +7,226 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('email').textContent = usuario.email;
     document.getElementById('rol').textContent = usuario.rol;
     
-    cargarBoletos();
     cargarMisEventos();
+    cargarBoletos();
     cargarEstadisticas();
 });
 
 // Cargar boletos del usuario
 async function cargarBoletos() {
     const container = document.getElementById('boletosContainer');
-    container.innerHTML = '<p class="text-muted">Cargando boletos...</p>';
+    container.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="text-muted mt-2">Cargando boletos...</p>
+        </div>
+    `;
     
     try {
         const boletos = await BoletoAPI.listarPorUsuario(usuario.id);
         
         if (boletos.length === 0) {
             container.innerHTML = `
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle"></i> No has comprado boletos aún.
-                    <a href="index.html" class="alert-link">Ver eventos disponibles</a>
+                <div class="text-center py-5">
+                    <i class="bi bi-ticket-perforated display-1 text-muted"></i>
+                    <h5 class="mt-3 text-muted">No has comprado boletos aún</h5>
+                    <p class="text-muted">Explora eventos disponibles y compra tu primer boleto</p>
+                    <a href="index.html" class="btn btn-primary mt-3">
+                        <i class="bi bi-search"></i> Ver Eventos Disponibles
+                    </a>
                 </div>
             `;
             return;
         }
         
-        container.innerHTML = boletos.map(boleto => {
-            const estadoClass = {
-                'ACTIVO': 'success',
-                'USADO': 'secondary',
-                'CANCELADO': 'danger'
-            }[boleto.estado] || 'secondary';
+        // Agrupar boletos por evento
+        const boletosPorEvento = {};
+        boletos.forEach(boleto => {
+            const eventoId = boleto.evento.id;
+            if (!boletosPorEvento[eventoId]) {
+                boletosPorEvento[eventoId] = {
+                    evento: boleto.evento,
+                    boletos: []
+                };
+            }
+            boletosPorEvento[eventoId].boletos.push(boleto);
+        });
+        
+        // Generar HTML
+        let html = '';
+        
+        Object.values(boletosPorEvento).forEach(grupo => {
+            const evento = grupo.evento;
+            const boletosEvento = grupo.boletos;
+            const boletosActivos = boletosEvento.filter(b => b.estado === 'ACTIVO').length;
+            const boletosUsados = boletosEvento.filter(b => b.estado === 'USADO').length;
+            const boletosCancelados = boletosEvento.filter(b => b.estado === 'CANCELADO').length;
             
-            const estadoIcon = {
-                'ACTIVO': 'bi-check-circle',
-                'USADO': 'bi-check2-all',
-                'CANCELADO': 'bi-x-circle'
-            }[boleto.estado] || 'bi-ticket';
+            const fechaEvento = new Date(evento.fechaEvento);
+            const ahora = new Date();
+            const esEventoPasado = fechaEvento < ahora;
             
-            return `
-                <div class="card mb-3 shadow-sm">
-                    <div class="card-body">
+            html += `
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-header bg-primary text-white">
                         <div class="row align-items-center">
                             <div class="col-md-8">
-                                <h5 class="card-title mb-2">
-                                    <i class="bi bi-ticket-perforated text-primary"></i>
-                                    ${boleto.evento.titulo}
+                                <h5 class="mb-1">
+                                    <i class="bi bi-calendar-event"></i> ${evento.titulo}
                                 </h5>
-                                <p class="mb-1">
-                                    <i class="bi bi-calendar3"></i>
-                                    <small>${Utils.formatearFecha(boleto.evento.fechaEvento)}</small>
-                                </p>
-                                <p class="mb-1">
-                                    <i class="bi bi-geo-alt"></i>
-                                    <small>${boleto.evento.lugar}</small>
-                                </p>
-                                <p class="mb-2">
-                                    <i class="bi bi-cash"></i>
-                                    <strong>${Utils.formatearPrecio(boleto.evento.precio)}</strong>
-                                </p>
-                                <span class="badge bg-${estadoClass}">
-                                    <i class="${estadoIcon}"></i> ${boleto.estado}
-                                </span>
-                                ${boleto.estado === 'USADO' ? 
-                                    `<small class="text-muted ms-2">Usado: ${Utils.formatearFecha(boleto.fechaUso)}</small>` 
-                                    : ''}
+                                <small>
+                                    <i class="bi bi-calendar3"></i> ${Utils.formatearFecha(evento.fechaEvento)} • 
+                                    <i class="bi bi-geo-alt"></i> ${evento.lugar}
+                                </small>
                             </div>
-                            <div class="col-md-4 text-center">
-                                <div class="qr-code-container p-3 bg-light rounded">
-                                    <img id="qr-${boleto.id}" src="" alt="QR Code" style="width: 150px; height: 150px; display: none;" class="mb-2">
-                                    <div id="qr-loading-${boleto.id}" class="mb-2">
-                                        <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                            <span class="visually-hidden">Cargando...</span>
-                                        </div>
+                            <div class="col-md-4 text-end">
+                                <span class="badge ${esEventoPasado ? 'bg-secondary' : 'bg-success'} fs-6">
+                                    ${esEventoPasado ? 'Evento Finalizado' : 'Evento Próximo'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Resumen de boletos -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-4">
+                                <div class="p-2 bg-light rounded text-center">
+                                    <small class="text-muted d-block">Total Boletos</small>
+                                    <strong class="fs-5 text-primary">${boletosEvento.length}</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 bg-success bg-opacity-10 rounded text-center">
+                                    <small class="text-muted d-block">Activos</small>
+                                    <strong class="fs-5 text-success">${boletosActivos}</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 bg-secondary bg-opacity-10 rounded text-center">
+                                    <small class="text-muted d-block">Usados</small>
+                                    <strong class="fs-5 text-secondary">${boletosUsados}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Lista de boletos -->
+                        <div class="accordion" id="accordion-${evento.id}">
+            `;
+            
+            boletosEvento.forEach((boleto, index) => {
+                const estadoClass = {
+                    'ACTIVO': 'success',
+                    'USADO': 'secondary',
+                    'CANCELADO': 'danger'
+                }[boleto.estado] || 'secondary';
+                
+                const estadoIcon = {
+                    'ACTIVO': 'bi-check-circle-fill',
+                    'USADO': 'bi-check2-all',
+                    'CANCELADO': 'bi-x-circle-fill'
+                }[boleto.estado] || 'bi-ticket';
+                
+                html += `
+                    <div class="accordion-item border-0 mb-2 shadow-sm">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#boleto-${boleto.id}">
+                                <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                                    <div>
+                                        <span class="badge bg-${estadoClass} me-2">
+                                            <i class="${estadoIcon}"></i> ${boleto.estado}
+                                        </span>
+                                        <strong>Boleto #${boleto.id}</strong>
+                                        <small class="text-muted ms-2">
+                                            Comprado: ${Utils.formatearFecha(boleto.fechaCompra)}
+                                        </small>
                                     </div>
-                                    <small class="text-muted d-block">${boleto.codigoQR}</small>
-                                    <div class="btn-group mt-2" role="group">
-                                        <button class="btn btn-sm btn-outline-primary" onclick="descargarQR(${boleto.id}, '${boleto.codigoQR}')">
-                                            <i class="bi bi-download"></i> Descargar
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-info" onclick="verQRGrande(${boleto.id})">
-                                            <i class="bi bi-arrows-fullscreen"></i> Ampliar
-                                        </button>
+                                    <div>
+                                        <strong class="text-success">${Utils.formatearPrecio(evento.precio)}</strong>
+                                    </div>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="boleto-${boleto.id}" class="accordion-collapse collapse" 
+                             data-bs-parent="#accordion-${evento.id}">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h6 class="text-primary mb-3">
+                                            <i class="bi bi-info-circle"></i> Detalles del Boleto
+                                        </h6>
+                                        <div class="mb-2">
+                                            <small class="text-muted">Código QR:</small>
+                                            <code class="ms-2">${boleto.codigoQR}</code>
+                                        </div>
+                                        <div class="mb-2">
+                                            <small class="text-muted">Fecha de compra:</small>
+                                            <span class="ms-2">${Utils.formatearFecha(boleto.fechaCompra)}</span>
+                                        </div>
+                                        ${boleto.estado === 'USADO' ? `
+                                            <div class="mb-2">
+                                                <small class="text-muted">Fecha de uso:</small>
+                                                <span class="ms-2">${Utils.formatearFecha(boleto.fechaUso)}</span>
+                                            </div>
+                                        ` : ''}
+                                        ${boleto.estado === 'ACTIVO' ? `
+                                            <button class="btn btn-sm btn-danger mt-2" onclick="cancelarBoleto(${boleto.id})">
+                                                <i class="bi bi-x-circle"></i> Cancelar Boleto
+                                            </button>
+                                        ` : ''}
+                                    </div>
+                                    <div class="col-md-4 text-center">
+                                        <div class="qr-code-container p-3 bg-light rounded">
+                                            <h6 class="text-muted mb-3">Código QR</h6>
+                                            <img id="qr-${boleto.id}" src="" alt="QR Code" 
+                                                 style="width: 150px; height: 150px; display: none;" 
+                                                 class="mb-2 border rounded">
+                                            <div id="qr-loading-${boleto.id}" class="mb-2">
+                                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                    <span class="visually-hidden">Cargando...</span>
+                                                </div>
+                                            </div>
+                                            <div class="d-grid gap-2 mt-3">
+                                                <button class="btn btn-sm btn-outline-primary" onclick="descargarQR(${boleto.id}, '${boleto.codigoQR}')">
+                                                    <i class="bi bi-download"></i> Descargar
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-info" onclick="verQRGrande(${boleto.id})">
+                                                    <i class="bi bi-arrows-fullscreen"></i> Ver Grande
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-3">
-                            <small class="text-muted">
-                                <i class="bi bi-clock"></i> Comprado: ${Utils.formatearFecha(boleto.fechaCompra)}
-                            </small>
-                            ${boleto.estado === 'ACTIVO' ? 
-                                `<button class="btn btn-sm btn-danger float-end" onclick="cancelarBoleto(${boleto.id})">
-                                    <i class="bi bi-x"></i> Cancelar
-                                </button>` 
-                                : ''}
+                    </div>
+                `;
+            });
+            
+            html += `
                         </div>
                     </div>
                 </div>
             `;
-        }).join('');
+        });
+        
+        container.innerHTML = html;
         
         // Cargar las imágenes QR para cada boleto
         boletos.forEach(boleto => {
             cargarImagenQR(boleto.id);
         });
+        
     } catch (error) {
         console.error('Error al cargar boletos:', error);
-        container.innerHTML = '<p class="text-danger">Error al cargar boletos</p>';
+        container.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle"></i> 
+                Error al cargar boletos. Por favor, intenta de nuevo.
+            </div>
+        `;
     }
 }
 
@@ -232,41 +346,108 @@ async function cancelarBoleto(boletoId) {
 // Cargar eventos del usuario
 async function cargarMisEventos() {
     const container = document.getElementById('misEventosContainer');
-    container.innerHTML = '<p class="text-muted">Cargando eventos...</p>';
+    container.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="text-muted mt-2">Cargando eventos...</p>
+        </div>
+    `;
     
     try {
-        const todosEventos = await EventoAPI.listar();
-        const misEventos = todosEventos.filter(evento => 
-            evento.organizador && evento.organizador.id === usuario.id
-        );
+        const misEventos = await EventoAPI.listarPorUsuario(usuario.id);
         
         if (misEventos.length === 0) {
-            container.innerHTML = '<p class="text-muted">No has creado eventos aún.</p>';
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="bi bi-calendar-x display-1 text-muted"></i>
+                    <h5 class="mt-3 text-muted">No has creado eventos aún</h5>
+                    <p class="text-muted">¡Crea tu primer evento y comienza a vender boletos!</p>
+                    <a href="crear-evento.html" class="btn btn-primary mt-3">
+                        <i class="bi bi-plus-circle"></i> Crear Mi Primer Evento
+                    </a>
+                </div>
+            `;
             return;
         }
         
-        container.innerHTML = misEventos.map(evento => `
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h6>${evento.titulo}</h6>
-                    <p class="text-muted small mb-2">
-                        <i class="bi bi-calendar3"></i> ${Utils.formatearFecha(evento.fechaEvento)}
-                    </p>
-                    <div class="mb-2">
-                        <span class="badge bg-${evento.estado === 'ACTIVO' ? 'success' : 'secondary'}">${evento.estado}</span>
-                        <span class="badge bg-info">${evento.entradasVendidas}/${evento.capacidad} vendidos</span>
-                    </div>
-                    <div class="btn-group btn-group-sm">
-                        <a href="evento-detalle.html?id=${evento.id}" class="btn btn-outline-primary">Ver</a>
-                        <button class="btn btn-outline-warning" onclick="editarEvento(${evento.id})">Editar</button>
-                        <button class="btn btn-outline-danger" onclick="eliminarEvento(${evento.id})">Eliminar</button>
-                    </div>
-                </div>
+        container.innerHTML = `
+            <div class="row g-3">
+                ${misEventos.map(evento => {
+                    const fechaEvento = new Date(evento.fechaEvento);
+                    const ahora = new Date();
+                    const esEventoPasado = fechaEvento < ahora;
+                    const estadoBadge = esEventoPasado 
+                        ? '<span class="badge bg-secondary">Finalizado</span>' 
+                        : '<span class="badge bg-success">Activo</span>';
+                    
+                    return `
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="position-relative">
+                                    <img src="${evento.imagenUrl || 'img/placeholder-event.jpg'}" 
+                                         class="card-img-top" 
+                                         alt="${evento.titulo}"
+                                         style="height: 180px; object-fit: cover;">
+                                    <div class="position-absolute top-0 end-0 m-2">
+                                        ${estadoBadge}
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title fw-bold mb-2">${evento.titulo}</h5>
+                                    <p class="card-text text-muted small mb-2">
+                                        <i class="bi bi-calendar3 text-primary"></i> 
+                                        ${Utils.formatearFecha(evento.fechaEvento)}
+                                    </p>
+                                    <p class="card-text text-muted small mb-3">
+                                        <i class="bi bi-geo-alt text-danger"></i> 
+                                        ${evento.lugar || 'Sin ubicación'}
+                                    </p>
+                                    
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <div class="text-center p-2 bg-light rounded">
+                                                <small class="text-muted d-block">Capacidad</small>
+                                                <strong class="text-primary">${evento.capacidad || 0}</strong>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="text-center p-2 bg-light rounded">
+                                                <small class="text-muted d-block">Precio</small>
+                                                <strong class="text-success">$${evento.precio || 0}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <a href="evento-detalle.html?id=${evento.id}" class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-eye"></i> Ver Detalles
+                                        </a>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-warning" onclick="editarEvento(${evento.id})">
+                                                <i class="bi bi-pencil"></i> Editar
+                                            </button>
+                                            <button class="btn btn-danger" onclick="eliminarEvento(${evento.id}, '${evento.titulo.replace(/'/g, "\\'")}')">
+                                                <i class="bi bi-trash"></i> Eliminar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
             </div>
-        `).join('');
+        `;
     } catch (error) {
         console.error('Error al cargar eventos:', error);
-        container.innerHTML = '<p class="text-danger">Error al cargar eventos</p>';
+        container.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle"></i> 
+                Error al cargar eventos. Por favor, intenta de nuevo.
+            </div>
+        `;
     }
 }
 
@@ -276,8 +457,8 @@ function editarEvento(id) {
 }
 
 // Eliminar evento
-async function eliminarEvento(id) {
-    if (!confirm('¿Estás seguro de eliminar este evento?')) {
+async function eliminarEvento(id, nombre) {
+    if (!confirm(`¿Estás seguro de eliminar el evento "${nombre}"?\n\nEsta acción no se puede deshacer.`)) {
         return;
     }
     

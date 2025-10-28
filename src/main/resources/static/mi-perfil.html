@@ -59,13 +59,13 @@
                 <div class="col-md-8">
                     <ul class="nav nav-tabs mb-3" id="perfilTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="boletos-tab" data-bs-toggle="tab" data-bs-target="#boletos" type="button">
-                                <i class="bi bi-ticket"></i> Mis Boletos
+                            <button class="nav-link active" id="mis-eventos-tab" data-bs-toggle="tab" data-bs-target="#mis-eventos" type="button">
+                                <i class="bi bi-calendar-check"></i> Mis Eventos
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="mis-eventos-tab" data-bs-toggle="tab" data-bs-target="#mis-eventos" type="button">
-                                <i class="bi bi-calendar-check"></i> Mis Eventos
+                            <button class="nav-link" id="boletos-tab" data-bs-toggle="tab" data-bs-target="#boletos" type="button">
+                                <i class="bi bi-ticket"></i> Mis Boletos
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
@@ -76,29 +76,45 @@
                     </ul>
 
                     <div class="tab-content" id="perfilTabsContent">
-                        <!-- Mis Boletos -->
-                        <div class="tab-pane fade show active" id="boletos" role="tabpanel">
+                        <!-- Mis Eventos Creados -->
+                        <div class="tab-pane fade show active" id="mis-eventos" role="tabpanel">
                             <div class="card shadow">
                                 <div class="card-body">
-                                    <h5 class="card-title">Boletos Comprados</h5>
-                                    <div id="boletosContainer">
-                                        <p class="text-muted">No has comprado boletos aún.</p>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="card-title mb-0">
+                                            <i class="bi bi-calendar-event text-primary"></i> Eventos que Organizo
+                                        </h5>
+                                        <a href="crear-evento.html" class="btn btn-primary btn-sm">
+                                            <i class="bi bi-plus-circle"></i> Crear Nuevo Evento
+                                        </a>
+                                    </div>
+                                    <div id="misEventosContainer">
+                                        <div class="text-center py-4">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Cargando...</span>
+                                            </div>
+                                            <p class="text-muted mt-2">Cargando eventos...</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Mis Eventos Creados -->
-                        <div class="tab-pane fade" id="mis-eventos" role="tabpanel">
+                        <!-- Mis Boletos -->
+                        <div class="tab-pane fade" id="boletos" role="tabpanel">
                             <div class="card shadow">
                                 <div class="card-body">
-                                    <h5 class="card-title">Eventos que Organizo</h5>
-                                    <div id="misEventosContainer">
-                                        <p class="text-muted">No has creado eventos aún.</p>
+                                    <h5 class="card-title">
+                                        <i class="bi bi-ticket-perforated text-success"></i> Boletos Comprados
+                                    </h5>
+                                    <div id="boletosContainer">
+                                        <div class="text-center py-4">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Cargando...</span>
+                                            </div>
+                                            <p class="text-muted mt-2">Cargando boletos...</p>
+                                        </div>
                                     </div>
-                                    <a href="crear-evento.html" class="btn btn-primary mt-3">
-                                        <i class="bi bi-plus-circle"></i> Crear Nuevo Evento
-                                    </a>
                                 </div>
                             </div>
                         </div>
