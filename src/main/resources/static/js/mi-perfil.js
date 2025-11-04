@@ -367,7 +367,7 @@ async function cargarMisEventos() {
                                             <button class="btn btn-outline-primary" onclick="editarEvento(${evento.id})">
                                                 <i class="bi bi-pencil"></i> Editar
                                             </button>
-                                            <button class="btn btn-outline-secondary" onclick="eliminarEvento(${evento.id}, '${evento.titulo.replace(/'/g, "\\'")}')">
+                                            <button class="btn btn-outline-danger" onclick="eliminarEvento(${evento.id}, \`${evento.titulo.replace(/`/g, "\\`")}\`)">
                                                 <i class="bi bi-trash"></i> Eliminar
                                             </button>
                                         </div>

@@ -165,6 +165,7 @@ async function cargarEvento() {
         document.getElementById('fechaEvento').value = fechaFormateada;
         
         document.getElementById('lugar').value = eventoActual.lugar;
+        document.getElementById('direccion').value = eventoActual.direccion || '';
         document.getElementById('capacidad').value = eventoActual.capacidad;
         document.getElementById('precio').value = eventoActual.precio;
         document.getElementById('estado').value = eventoActual.estado;
@@ -227,7 +228,7 @@ document.getElementById('editarEventoForm').addEventListener('submit', async (e)
         formData.append('descripcion', document.getElementById('descripcion').value.trim());
         formData.append('fechaEvento', document.getElementById('fechaEvento').value);
         formData.append('lugar', document.getElementById('lugar').value.trim());
-        formData.append('direccion', eventoActual.direccion || '');
+        formData.append('direccion', document.getElementById('direccion').value.trim());
         formData.append('capacidad', nuevaCapacidad);
         formData.append('precio', eventoActual.precio); // Usar precio original (campo bloqueado)
         formData.append('estado', document.getElementById('estado').value);
@@ -268,7 +269,7 @@ document.getElementById('editarEventoForm').addEventListener('submit', async (e)
             },
             fechaEvento: document.getElementById('fechaEvento').value,
             lugar: document.getElementById('lugar').value.trim(),
-            direccion: eventoActual.direccion,
+            direccion: document.getElementById('direccion').value.trim(),
             capacidad: nuevaCapacidad,
             precio: eventoActual.precio, // Usar precio original (campo bloqueado)
             estado: document.getElementById('estado').value,
