@@ -1,5 +1,5 @@
-// API Base URL - Detecta automáticamente la URL del servidor
-const API_BASE_URL = `${window.location.origin}/api`;
+// API Base URL - Detecta automáticamente la URL del servidor con context path
+const API_BASE_URL = `${window.location.origin}/eventsphere/api`;
 
 // Funciones para el API de Usuarios
 const UsuarioAPI = {
