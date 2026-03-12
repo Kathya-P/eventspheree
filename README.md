@@ -52,88 +52,88 @@ EventSphere es una plataforma web dinámica que combina la gestión de eventos c
 
 ### Backend
 - **Java 21**
-- **Spring Boot 3.4.12**
-- **Spring Data JPA**
-- **Hibernate 6.6.33**
-- **Oracle Database 21.3**
-- **Maven 3.9.11**
+- **Spring Boot 3.4.1**
+- **Spring Data JPA / Hibernate**
+- **PostgreSQL**
+- **Maven**
 - **Lombok**
+- **ZXing** (generación de QR)
 
 ### Frontend
-- **HTML5**
-- **CSS3**
-- **JavaScript (ES6+)**
-- **Bootstrap 5.3.0**
+- **HTML5 / CSS3 / JavaScript (ES6+)**
+- **Bootstrap 5.3**
 - **Bootstrap Icons**
 
-### Base de Datos
-- **Oracle Database 21.3**
-- **HikariCP** (Connection Pooling)
+### Infraestructura
+- **Docker** (multi-stage build)
+- **Railway** (deploy en la nube)
+- **HikariCP** (connection pooling)
 
 ## 📦 Requisitos Previos
 
 - **JDK 21** o superior
 - **Maven 3.9+**
-- **Oracle Database 21.3**
-- **Docker** (si ejecutas Oracle en contenedor)
+- **Docker y Docker Compose** (para desarrollo local)
 
 ## 🚀 Instalación
 
-### 1. Clonar el repositorio
+### Opción A: Desarrollo local con Docker Compose
+
 ```bash
 git clone https://github.com/Kathya-P/eventspheree.git
-cd eventsphere
+cd eventspheree
+docker-compose up --build
 ```
 
-### 2. Configurar Oracle Database
+La aplicación estará disponible en: **http://localhost:8080/eventsphere**
 
-#### Opción A: Usando Docker
+### Opción B: Ejecutar solo la BD con Docker y la app con Maven
+
 ```bash
-docker run -d --name oracle-xe \
-  -p 1521:1521 \
-  -e ORACLE_PASSWORD=eventpass123 \
-  gvenzl/oracle-xe:21.3.0-slim
-```
+# Levantar solo PostgreSQL
+docker-compose up db
 
-#### Opción B: Instalación local
-Instala Oracle Database 21.3 y crea el usuario:
-```sql
-CREATE USER eventsphere IDENTIFIED BY eventpass123;
-GRANT CONNECT, RESOURCE, DBA TO eventsphere;
-```
-
-### 3. Configurar application.properties
-Edita `src/main/resources/application.properties`:
-
-```properties
-# Oracle Database
-spring.datasource.url=jdbc:oracle:thin:@localhost:1521:XE
-spring.datasource.username=eventsphere
-spring.datasource.password=eventpass123
-
-# JPA/Hibernate
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-```
-
-### 4. Compilar y ejecutar
-```bash
-mvn clean package -DskipTests
+# En otra terminal, ejecutar la app
 mvn spring-boot:run
 ```
 
-La aplicación estará disponible en: **http://localhost:8080**
+La aplicación estará disponible en: **http://localhost:8080/eventsphere**
 
-## ⚙️ Configuración
+## ☁️ Deploy en Railway (producción)
 
-### Variables de Entorno (Opcional)
+### 1. Subir el proyecto a GitHub
 ```bash
-export DB_HOST=localhost
-export DB_PORT=1521
-export DB_NAME=XE
-export DB_USER=eventsphere
-export DB_PASSWORD=eventpass123
+git add .
+git commit -m "Deploy to Railway"
+git push origin main
 ```
+
+### 2. Crear proyecto en Railway
+1. Ve a [railway.app](https://railway.app) y crea una cuenta
+2. Clic en **New Project → Deploy from GitHub repo**
+3. Selecciona el repositorio `eventspheree`
+4. Railway detectará el `Dockerfile` automáticamente
+
+### 3. Agregar PostgreSQL
+1. Dentro del proyecto en Railway, clic en **+ New → Database → PostgreSQL**
+2. Railway inyecta automáticamente las variables `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`
+
+### 4. Configurar variable de entorno
+En la sección **Variables** del servicio app, agregar:
+```
+SPRING_PROFILES_ACTIVE = railway
+```
+
+### 5. Deploy
+Railway hace el build con el `Dockerfile` y despliega automáticamente.
+La URL pública tendrá el formato: `https://tu-proyecto.up.railway.app/eventsphere`
+
+## ⚙️ Configuración de perfiles
+
+| Perfil | Base de datos | Uso |
+|--------|--------------|-----|
+| `local` | PostgreSQL en localhost:5432 | Desarrollo local |
+| `railway` | PostgreSQL en Railway (env vars) | Producción en Railway |
 
 ### Categorías Pre-cargadas
 Al iniciar la aplicación, se crean automáticamente 5 categorías:
