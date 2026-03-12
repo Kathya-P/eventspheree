@@ -5,6 +5,7 @@ import com.eventsphere.model.Foto;
 import com.eventsphere.model.Usuario;
 import com.eventsphere.repository.FotoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,12 +22,16 @@ import java.util.UUID;
 @Service
 @Transactional
 public class FotoService {
-    
+
     @Autowired
     private FotoRepository fotoRepository;
-    
-    private final String UPLOAD_DIR = "src/main/resources/static/uploads/eventos/fotos/";
-    
+
+    @Value("${upload.path:uploads/eventos}")
+    private String uploadBase;
+
+    private String getUploadDir() {
+        return uploadBase + "/fotos/";
+    }
     public Foto subirFoto(Usuario usuario, Evento evento, MultipartFile archivo, String descripcion) throws IOException {
         // Validar archivo
         if (archivo.isEmpty()) {
@@ -45,7 +50,7 @@ public class FotoService {
         }
         
         // Crear directorio si no existe
-        Path uploadPath = Paths.get(UPLOAD_DIR);
+        Path uploadPath = Paths.get(getUploadDir());
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
@@ -84,7 +89,7 @@ public class FotoService {
         // Eliminar archivo físico
         String url = foto.getUrl();
         String fileName = url.substring(url.lastIndexOf("/") + 1);
-        Path filePath = Paths.get(UPLOAD_DIR + fileName);
+        Path filePath = Paths.get(getUploadDir() + fileName);
         
         if (Files.exists(filePath)) {
             Files.delete(filePath);
