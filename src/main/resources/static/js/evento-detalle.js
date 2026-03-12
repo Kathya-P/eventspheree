@@ -522,14 +522,13 @@ function mostrarFotos(fotos) {
     
     const usuario = Utils.obtenerUsuarioLocal();
     
-    container.innerHTML = fotos.map(foto => {
+    container.innerHTML = fotos.map((foto, index) => {
         const imgUrl = resolverUrlImagen(foto.url);
-        const esMia = usuario && usuario.id === foto.usuario.id;
         return `
         <div class="col-md-4 col-sm-6">
             <div class="card h-100 shadow-sm">
                 <img src="${imgUrl}" class="card-img-top" style="height: 250px; object-fit: cover; cursor: pointer;"
-                     onclick="verFotoModal(${foto.id}, '${imgUrl}', '${(foto.descripcion || '').replace(/'/g, "\\'")}', '${foto.usuario.username}', '${Utils.formatearFecha(foto.fechaSubida)}', ${esMia})">
+                     data-foto-index="${index}">
                 <div class="card-body p-2">
                     <p class="small mb-1">
                         <i class="bi bi-person-circle"></i> ${foto.usuario.username}
@@ -543,6 +542,23 @@ function mostrarFotos(fotos) {
         </div>
         `;
     }).join('');
+
+    container.querySelectorAll('[data-foto-index]').forEach(img => {
+        const foto = fotos[Number(img.dataset.fotoIndex)];
+        const imgUrl = resolverUrlImagen(foto.url);
+        const esMia = usuario && usuario.id === foto.usuario.id;
+
+        img.addEventListener('click', () => {
+            verFotoModal(
+                foto.id,
+                imgUrl,
+                foto.descripcion || '',
+                foto.usuario.username,
+                Utils.formatearFecha(foto.fechaSubida),
+                esMia
+            );
+        });
+    });
 }
 
 // Ver foto en modal
