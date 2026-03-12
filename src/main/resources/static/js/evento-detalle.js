@@ -522,11 +522,14 @@ function mostrarFotos(fotos) {
     
     const usuario = Utils.obtenerUsuarioLocal();
     
-    container.innerHTML = fotos.map(foto => `
+    container.innerHTML = fotos.map(foto => {
+        const imgUrl = resolverUrlImagen(foto.url);
+        const esMia = usuario && usuario.id === foto.usuario.id;
+        return `
         <div class="col-md-4 col-sm-6">
             <div class="card h-100 shadow-sm">
-                <img src="${resolverUrlImagen(foto.url)}" class="card-img-top" style="height: 250px; object-fit: cover; cursor: pointer;" 
-                     onclick="verFotoModal(${foto.id}, '${resolverUrlImagen(foto.url)}',` '${foto.descripcion || ''}', '${foto.usuario.username}', '${Utils.formatearFecha(foto.fechaSubida)}', ${usuario && usuario.id === foto.usuario.id})">
+                <img src="${imgUrl}" class="card-img-top" style="height: 250px; object-fit: cover; cursor: pointer;"
+                     onclick="verFotoModal(${foto.id}, '${imgUrl}', '${(foto.descripcion || '').replace(/'/g, "\\'")}', '${foto.usuario.username}', '${Utils.formatearFecha(foto.fechaSubida)}', ${esMia})">
                 <div class="card-body p-2">
                     <p class="small mb-1">
                         <i class="bi bi-person-circle"></i> ${foto.usuario.username}
@@ -538,7 +541,8 @@ function mostrarFotos(fotos) {
                 </div>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 // Ver foto en modal
