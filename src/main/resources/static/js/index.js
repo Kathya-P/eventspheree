@@ -264,7 +264,7 @@ function mostrarEventos(eventos) {
 
 // Crear tarjeta vista grid
 function crearTarjetaGrid(evento, esEventoPropio = false) {
-    const imagenUrl = evento.imagenUrl || `https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=250&fit=crop&q=80`;
+    const imagenUrl = resolverUrlImagen(evento.imagenUrl) || `https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=250&fit=crop&q=80`;
     const disponibles = evento.capacidad - evento.entradasVendidas;
     const porcentajeVendido = Math.round((evento.entradasVendidas / evento.capacidad) * 100);
     
@@ -349,7 +349,7 @@ function crearTarjetaGrid(evento, esEventoPropio = false) {
 
 // Crear tarjeta vista lista
 function crearTarjetaLista(evento) {
-    const imagenUrl = evento.imagenUrl || `https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=200&h=150&fit=crop&q=80`;
+    const imagenUrl = resolverUrlImagen(evento.imagenUrl) || `https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=200&h=150&fit=crop&q=80`;
     const disponibles = evento.capacidad - evento.entradasVendidas;
     
     return `

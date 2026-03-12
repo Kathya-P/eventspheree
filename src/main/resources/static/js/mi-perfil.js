@@ -196,7 +196,7 @@ async function cargarImagenQR(boletoId) {
 function descargarQR(boletoId, codigoQR) {
     const imgElement = document.getElementById(`qr-${boletoId}`);
     if (!imgElement || !imgElement.src) {
-        alert('El código QR aún no se ha cargado');
+        mostrarToast('El código QR aún no se ha cargado', 'warning');
         return;
     }
     
@@ -213,7 +213,7 @@ function descargarQR(boletoId, codigoQR) {
 function verQRGrande(boletoId) {
     const imgElement = document.getElementById(`qr-${boletoId}`);
     if (!imgElement || !imgElement.src) {
-        alert('El código QR aún no se ha cargado');
+        mostrarToast('El código QR aún no se ha cargado', 'warning');
         return;
     }
     
@@ -263,22 +263,18 @@ function verQR(codigoQR) {
 
 // Cancelar boleto
 async function cancelarBoleto(boletoId) {
-    if (!confirm('¿Estás seguro de cancelar este boleto?\nEsta acción no se puede deshacer.')) {
-        return;
-    }
-    
     try {
         const response = await BoletoAPI.cancelar(boletoId);
         if (response.ok) {
-            alert('Boleto cancelado correctamente');
-            cargarBoletos(); // Recargar lista
+            mostrarToast('Boleto cancelado', 'success');
+            cargarBoletos();
         } else {
             const error = await response.text();
-            alert(`Error: ${error}`);
+            mostrarToast(error || 'Error al cancelar boleto', 'danger');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Error de conexión');
+        mostrarToast('Error de conexión', 'danger');
     }
 }
 
@@ -325,7 +321,7 @@ async function cargarMisEventos() {
                         <div class="col-md-6">
                             <div class="card h-100 border-0 shadow-sm">
                                 <div class="position-relative">
-                                    <img src="${evento.imagenUrl || 'img/placeholder-event.jpg'}" 
+                                    <img src="${resolverUrlImagen(evento.imagenUrl) || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=180&fit=crop&q=80'}" 
                                          class="card-img-top" 
                                          alt="${evento.titulo}"
                                          style="height: 180px; object-fit: cover;">
@@ -397,29 +393,23 @@ function editarEvento(id) {
 
 // Eliminar evento
 async function eliminarEvento(id, nombre) {
-    if (!confirm(`¿Estás seguro de eliminar el evento "${nombre}"?\n\nEsta acción no se puede deshacer.`)) {
-        return;
-    }
-    
     try {
         const response = await EventoAPI.eliminar(id);
         if (response.ok) {
-            alert('Evento eliminado correctamente');
+            mostrarToast('Evento eliminado', 'success');
             cargarMisEventos();
         } else {
-            alert('Error al eliminar evento');
+            mostrarToast('Error al eliminar evento', 'danger');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Error de conexión');
+        mostrarToast('Error de conexión', 'danger');
     }
 }
 
 // Cerrar sesión
 function cerrarSesion() {
-    if (confirm('¿Deseas cerrar sesión?')) {
-        Utils.cerrarSesion();
-    }
+    Utils.cerrarSesion();
 }
 
 // Cargar estadísticas del organizador

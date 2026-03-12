@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (eventoId) {
         cargarEvento();
     } else {
-        alert('No se especificó un evento');
         window.location.href = 'index.html';
     }
 });
@@ -24,7 +23,6 @@ async function cargarEvento() {
         cargarFotos(); // Cargar galería de fotos
     } catch (error) {
         console.error('Error al cargar evento:', error);
-        alert('Error al cargar el evento');
         window.location.href = 'index.html';
     }
 }
@@ -35,7 +33,7 @@ function mostrarEvento(evento) {
     document.getElementById('eventoContainer').classList.remove('d-none');
     
     // Si hay imagen, usar la subida; si no, usar placeholder según categoría
-    const imagenUrl = evento.imagenUrl || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&h=400&fit=crop';
+    const imagenUrl = resolverUrlImagen(evento.imagenUrl) || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&h=400&fit=crop';
     const disponibles = evento.capacidad - evento.entradasVendidas;
     
     // Verificar si el usuario actual es el creador del evento
@@ -79,7 +77,7 @@ document.getElementById('compraModal')?.addEventListener('show.bs.modal', functi
     }
     
     if (!eventoActual) {
-        alert('Error: No se ha cargado el evento');
+        mostrarToast('Error: No se ha cargado el evento', 'danger');
         event.preventDefault();
         return;
     }
@@ -87,7 +85,7 @@ document.getElementById('compraModal')?.addEventListener('show.bs.modal', functi
     const disponibles = eventoActual.capacidad - eventoActual.entradasVendidas;
     
     if (disponibles <= 0) {
-        alert('Lo sentimos, este evento está agotado');
+        mostrarToast('Lo sentimos, este evento está agotado', 'warning');
         event.preventDefault();
         return;
     }
@@ -142,14 +140,7 @@ async function confirmarCompra() {
     const disponibles = eventoActual.capacidad - eventoActual.entradasVendidas;
     
     if (cantidad > disponibles) {
-        alert(`Solo hay ${disponibles} boletos disponibles`);
-        return;
-    }
-    
-    const total = eventoActual.precio * cantidad;
-    const confirmMsg = `¿Confirmar compra de ${cantidad} boleto(s)?\n\nTotal: ${Utils.formatearPrecio(total)}`;
-    
-    if (!confirm(confirmMsg)) {
+        mostrarToast(`Solo hay ${disponibles} boletos disponibles`, 'warning');
         return;
     }
     
@@ -164,7 +155,7 @@ async function confirmarCompra() {
         
     } catch (error) {
         console.error('Error al abrir modal de pago:', error);
-        alert(`Error: ${error.message || 'Error al procesar la compra. Intenta nuevamente.'}`);
+        mostrarToast(error.message || 'Error al procesar la compra. Intenta nuevamente.', 'danger');
     }
 }
 
@@ -258,7 +249,7 @@ document.getElementById('resenaForm')?.addEventListener('submit', async (e) => {
     const comentario = document.getElementById('comentarioResena').value.trim();
     
     if (!calificacion) {
-        alert('Por favor selecciona una calificación');
+        mostrarToast('Por favor selecciona una calificación', 'warning');
         return;
     }
     
@@ -266,16 +257,16 @@ document.getElementById('resenaForm')?.addEventListener('submit', async (e) => {
         const response = await ResenaAPI.crear(usuario.id, eventoId, parseInt(calificacion), comentario);
         
         if (response.ok) {
-            alert('¡Reseña publicada exitosamente! 🌟');
+            mostrarToast('¡Reseña publicada exitosamente!', 'success');
             document.getElementById('resenaForm').reset();
-            cargarResenas(); // Recargar reseñas
+            cargarResenas();
         } else {
             const error = await response.text();
-            alert(`Error: ${error}`);
+            mostrarToast(error || 'Error al publicar reseña', 'danger');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Error de conexión. Intenta nuevamente.');
+        mostrarToast('Error de conexión. Intenta nuevamente.', 'danger');
     }
 });
 
@@ -351,14 +342,14 @@ document.getElementById('chatForm')?.addEventListener('submit', async (e) => {
         
         if (response.ok) {
             document.getElementById('mensajeTexto').value = '';
-            cargarMensajes(); // Recargar mensajes
+            cargarMensajes();
         } else {
             const error = await response.text();
-            alert(`Error: ${error}`);
+            mostrarToast(error || 'Error al enviar mensaje', 'danger');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Error de conexión. Intenta nuevamente.');
+        mostrarToast('Error de conexión. Intenta nuevamente.', 'danger');
     }
 });
 
@@ -424,13 +415,13 @@ imagenInput.addEventListener('change', (e) => {
 function manejarArchivo(file) {
     // Validar tipo
     if (!file.type.startsWith('image/')) {
-        alert('El archivo debe ser una imagen (JPG, PNG, GIF)');
+        mostrarToast('El archivo debe ser una imagen (JPG, PNG, GIF)', 'warning');
         return;
     }
     
     // Validar tamaño (5MB)
     if (file.size > 5 * 1024 * 1024) {
-        alert('La imagen no debe superar los 5MB');
+        mostrarToast('La imagen no debe superar los 5MB', 'warning');
         return;
     }
     
@@ -463,7 +454,7 @@ btnSubirFoto.addEventListener('click', async () => {
     }
     
     if (!archivoSeleccionado) {
-        alert('Por favor selecciona una imagen');
+        mostrarToast('Por favor selecciona una imagen', 'warning');
         return;
     }
     
@@ -477,7 +468,7 @@ btnSubirFoto.addEventListener('click', async () => {
         const foto = await FotoAPI.subir(usuario.id, eventoId, archivoSeleccionado, descripcion);
         
         if (foto.id) {
-            alert('¡Foto subida exitosamente! 📸');
+            mostrarToast('¡Foto subida exitosamente!', 'success');
             
             // Reset
             archivoSeleccionado = null;
@@ -486,14 +477,13 @@ btnSubirFoto.addEventListener('click', async () => {
             previewContainer.style.display = 'none';
             dropZone.style.display = 'block';
             
-            // Recargar galería
             cargarFotos();
         } else if (foto.error) {
-            alert(foto.error);
+            mostrarToast(foto.error, 'danger');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Error al subir la foto. Intenta nuevamente.');
+        mostrarToast('Error al subir la foto. Intenta nuevamente.', 'danger');
     } finally {
         btnSubirFoto.disabled = false;
         btnSubirFoto.innerHTML = '<i class="bi bi-upload"></i> Subir Foto';
@@ -535,8 +525,8 @@ function mostrarFotos(fotos) {
     container.innerHTML = fotos.map(foto => `
         <div class="col-md-4 col-sm-6">
             <div class="card h-100 shadow-sm">
-                <img src="${foto.url}" class="card-img-top" style="height: 250px; object-fit: cover; cursor: pointer;" 
-                     onclick="verFotoModal(${foto.id}, '${foto.url}', '${foto.descripcion || ''}', '${foto.usuario.username}', '${Utils.formatearFecha(foto.fechaSubida)}', ${usuario && usuario.id === foto.usuario.id})">
+                <img src="${resolverUrlImagen(foto.url)}" class="card-img-top" style="height: 250px; object-fit: cover; cursor: pointer;" 
+                     onclick="verFotoModal(${foto.id}, '${resolverUrlImagen(foto.url)}',` '${foto.descripcion || ''}', '${foto.usuario.username}', '${Utils.formatearFecha(foto.fechaSubida)}', ${usuario && usuario.id === foto.usuario.id})">
                 <div class="card-body p-2">
                     <p class="small mb-1">
                         <i class="bi bi-person-circle"></i> ${foto.usuario.username}
@@ -578,27 +568,19 @@ async function eliminarFoto(id) {
         return;
     }
     
-    if (!confirm('¿Estás seguro de que deseas eliminar esta foto?')) {
-        return;
-    }
-    
     try {
         const response = await FotoAPI.eliminar(id);
         
         if (response.mensaje) {
-            alert('Foto eliminada exitosamente');
-            
-            // Cerrar modal
+            mostrarToast('Foto eliminada', 'success');
             const modal = bootstrap.Modal.getInstance(document.getElementById('fotoModal'));
             modal.hide();
-            
-            // Recargar galería
             cargarFotos();
         } else if (response.error) {
-            alert(response.error);
+            mostrarToast(response.error, 'danger');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Error al eliminar la foto');
+        mostrarToast('Error al eliminar la foto', 'danger');
     }
 }

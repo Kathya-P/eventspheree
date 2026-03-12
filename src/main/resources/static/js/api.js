@@ -388,11 +388,52 @@ const Utils = {
     requiereAutenticacion: (mensaje = 'Debes iniciar sesión para acceder a esta función') => {
         const usuario = Utils.obtenerUsuarioLocal();
         if (!usuario) {
-            alert(mensaje);
+            mostrarToast(mensaje, 'warning');
             localStorage.setItem('paginaAnterior', window.location.href);
-            window.location.href = 'login.html';
+            setTimeout(() => { window.location.href = 'login.html'; }, 1200);
             return false;
         }
         return true;
     }
 };
+
+// Resolver URL de imagen (agrega context path si es relativa)
+function resolverUrlImagen(url) {
+    if (!url) return null;
+    if (url.startsWith('/uploads/')) return '/eventsphere' + url;
+    return url;
+}
+
+// Toast de notificación (reemplaza alert/confirm)
+function mostrarToast(mensaje, tipo = 'success') {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        container.style.zIndex = '9999';
+        document.body.appendChild(container);
+    }
+    const iconos = {
+        success: 'bi-check-circle-fill',
+        danger: 'bi-exclamation-triangle-fill',
+        warning: 'bi-exclamation-circle-fill',
+        info: 'bi-info-circle-fill'
+    };
+    const toastEl = document.createElement('div');
+    toastEl.className = `toast align-items-center text-bg-${tipo} border-0`;
+    toastEl.setAttribute('role', 'alert');
+    toastEl.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body d-flex align-items-center gap-2">
+                <i class="bi ${iconos[tipo] || iconos.info}"></i>
+                ${mensaje}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    container.appendChild(toastEl);
+    const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+    toast.show();
+    toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+}
