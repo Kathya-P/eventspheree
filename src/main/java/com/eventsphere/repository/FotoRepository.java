@@ -19,4 +19,6 @@ public interface FotoRepository extends JpaRepository<Foto, Long> {
     long countByEvento(Evento evento);
     
     long countByEventoId(Long eventoId);
+
+    void deleteByEvento(Evento evento);
 }

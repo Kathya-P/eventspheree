@@ -22,4 +22,6 @@ public interface BoletoRepository extends JpaRepository<Boleto, Long> {
     boolean existsByUsuarioAndEvento(Usuario usuario, Evento evento);
     
     long countByEventoAndEstado(Evento evento, String estado);
+
+    void deleteByEvento(Evento evento);
 }

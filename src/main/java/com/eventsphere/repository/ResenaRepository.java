@@ -27,6 +27,8 @@ public interface ResenaRepository extends JpaRepository<Resena, Long> {
     
     @Query("SELECT AVG(r.calificacion) FROM Resena r WHERE r.evento = :evento")
     Double calcularPromedioCalificacion(Evento evento);
+
+    void deleteByEvento(Evento evento);
     
     long countByEvento(Evento evento);
 }

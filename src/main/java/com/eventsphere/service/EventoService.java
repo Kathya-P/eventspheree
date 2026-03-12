@@ -3,7 +3,11 @@ package com.eventsphere.service;
 import com.eventsphere.model.Evento;
 import com.eventsphere.model.Usuario;
 import com.eventsphere.model.Categoria;
+import com.eventsphere.repository.BoletoRepository;
 import com.eventsphere.repository.EventoRepository;
+import com.eventsphere.repository.FotoRepository;
+import com.eventsphere.repository.MensajeRepository;
+import com.eventsphere.repository.ResenaRepository;
 import com.eventsphere.validator.EventoValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +23,18 @@ public class EventoService {
     @Autowired
     private EventoRepository eventoRepository;
     
+    @Autowired
+    private BoletoRepository boletoRepository;
+
+    @Autowired
+    private ResenaRepository resenaRepository;
+
+    @Autowired
+    private MensajeRepository mensajeRepository;
+
+    @Autowired
+    private FotoRepository fotoRepository;
+
     @Autowired
     private EventoValidator eventoValidator;
     
@@ -96,7 +112,14 @@ public class EventoService {
     }
     
     public void eliminarEvento(Long id) {
-        eventoRepository.deleteById(id);
+        Evento evento = eventoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
+        // Borrar registros hijos para evitar errores de FK
+        boletoRepository.deleteByEvento(evento);
+        resenaRepository.deleteByEvento(evento);
+        mensajeRepository.deleteByEvento(evento);
+        fotoRepository.deleteByEvento(evento);
+        eventoRepository.delete(evento);
     }
     
     public void cancelarEvento(Long id) {

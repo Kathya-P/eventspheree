@@ -19,4 +19,6 @@ public interface MensajeRepository extends JpaRepository<Mensaje, Long> {
     long countByEvento(Evento evento);
     
     long countByEventoId(Long eventoId);
+
+    void deleteByEvento(Evento evento);
 }
