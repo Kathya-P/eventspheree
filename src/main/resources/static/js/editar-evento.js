@@ -115,7 +115,7 @@ function cancelarNuevaImagen() {
         document.getElementById('imagenPreview').innerHTML = `
             <div class="alert alert-info">
                 <strong>Imagen actual:</strong><br>
-                <img src="${eventoActual.imagenUrl}" alt="Imagen del evento" class="img-thumbnail mt-2" style="max-width: 200px;">
+                <img src="${resolverUrlImagen(eventoActual.imagenUrl)}" alt="Imagen del evento" class="img-thumbnail mt-2" style="max-width: 200px;">
                 <p class="mt-2 mb-0"><small>Sube una nueva imagen si deseas cambiarla</small></p>
             </div>
         `;
@@ -192,7 +192,7 @@ async function cargarEvento() {
             document.getElementById('imagenPreview').innerHTML = `
                 <div class="alert alert-info">
                     <strong>Imagen actual:</strong><br>
-                    <img src="${eventoActual.imagenUrl}" alt="Imagen del evento" class="img-thumbnail mt-2" style="max-width: 200px;">
+                    <img src="${resolverUrlImagen(eventoActual.imagenUrl)}" alt="Imagen del evento" class="img-thumbnail mt-2" style="max-width: 200px;">
                     <p class="mt-2 mb-0"><small>Sube una nueva imagen si deseas cambiarla</small></p>
                 </div>
             `;

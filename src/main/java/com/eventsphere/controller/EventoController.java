@@ -4,10 +4,10 @@ import com.eventsphere.model.Evento;
 import com.eventsphere.model.Categoria;
 import com.eventsphere.model.Usuario;
 import com.eventsphere.service.EventoService;
+import com.eventsphere.service.ImageStorageService;
 import com.eventsphere.repository.CategoriaRepository;
 import com.eventsphere.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,14 +15,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/eventos")
@@ -37,51 +32,9 @@ public class EventoController {
     
     @Autowired
     private CategoriaRepository categoriaRepository;
-    
-    // Directorio donde se guardarán las imágenes
-    @Value("${upload.path:uploads/eventos}")
-    private String uploadPath;
-    
-    // Método auxiliar para guardar imagen
-    private String guardarImagen(MultipartFile imagen) throws IOException {
-        if (imagen == null || imagen.isEmpty()) {
-            return null;
-        }
-        
-        // Crear directorio si no existe
-        Path uploadDir = Paths.get(uploadPath);
-        if (!Files.exists(uploadDir)) {
-            Files.createDirectories(uploadDir);
-        }
-        
-        // Generar nombre único para la imagen
-        String extension = "";
-        String originalFilename = imagen.getOriginalFilename();
-        if (originalFilename != null && originalFilename.contains(".")) {
-            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        }
-        String nombreArchivo = UUID.randomUUID().toString() + extension;
-        
-        // Guardar archivo
-        Path destinoArchivo = uploadDir.resolve(nombreArchivo);
-        Files.copy(imagen.getInputStream(), destinoArchivo, StandardCopyOption.REPLACE_EXISTING);
-        
-        // Retornar la URL relativa
-        return "/uploads/eventos/" + nombreArchivo;
-    }
-    
-    // Método auxiliar para eliminar imagen antigua
-    private void eliminarImagenAntigua(String imagenUrl) {
-        if (imagenUrl != null && imagenUrl.startsWith("/uploads/")) {
-            try {
-                Path archivoAntiguo = Paths.get(imagenUrl.substring(1)); // Quitar el "/" inicial
-                Files.deleteIfExists(archivoAntiguo);
-            } catch (IOException e) {
-                // Log error pero no fallar la operación principal
-                System.err.println("Error al eliminar imagen antigua: " + e.getMessage());
-            }
-        }
-    }
+
+    @Autowired
+    private ImageStorageService imageStorageService;
     
     @PostMapping("/crear-con-imagen")
     public ResponseEntity<?> crearEventoConImagen(
@@ -120,7 +73,7 @@ public class EventoController {
             
             // Guardar imagen como archivo
             if (imagen != null && !imagen.isEmpty()) {
-                String imagenUrl = guardarImagen(imagen);
+                String imagenUrl = imageStorageService.guardarImagenEvento(imagen);
                 evento.setImagenUrl(imagenUrl);
             }
             
@@ -235,11 +188,9 @@ public class EventoController {
             
             // Actualizar imagen si se proporcionó una nueva
             if (imagen != null && !imagen.isEmpty()) {
-                // Eliminar imagen antigua
-                eliminarImagenAntigua(evento.getImagenUrl());
+                imageStorageService.eliminarImagen(evento.getImagenUrl());
                 
-                // Guardar nueva imagen
-                String nuevaImagenUrl = guardarImagen(imagen);
+                String nuevaImagenUrl = imageStorageService.guardarImagenEvento(imagen);
                 evento.setImagenUrl(nuevaImagenUrl);
             }
             
@@ -269,8 +220,11 @@ public class EventoController {
         try {
             // Buscar evento para obtener la URL de la imagen
             eventoService.buscarPorId(id).ifPresent(evento -> {
-                // Eliminar imagen del sistema de archivos
-                eliminarImagenAntigua(evento.getImagenUrl());
+                try {
+                    imageStorageService.eliminarImagen(evento.getImagenUrl());
+                } catch (IOException e) {
+                    throw new RuntimeException("No se pudo eliminar la imagen del evento", e);
+                }
             });
             
             eventoService.eliminarEvento(id);

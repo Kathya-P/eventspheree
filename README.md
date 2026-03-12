@@ -124,6 +124,15 @@ En la sección **Variables** del servicio app, agregar:
 SPRING_PROFILES_ACTIVE = railway
 ```
 
+Para que las nuevas imágenes queden guardadas de forma persistente, agrega también:
+```
+CLOUDINARY_CLOUD_NAME = tu_cloud_name
+CLOUDINARY_API_KEY = tu_api_key
+CLOUDINARY_API_SECRET = tu_api_secret
+```
+
+Cloudinary tiene plan gratuito y evita que Railway pierda archivos en cada redeploy.
+
 ### 5. Deploy
 Railway hace el build con el `Dockerfile` y despliega automáticamente.
 La URL pública tendrá el formato: `https://tu-proyecto.up.railway.app/eventsphere`
@@ -134,6 +143,10 @@ La URL pública tendrá el formato: `https://tu-proyecto.up.railway.app/eventsph
 |--------|--------------|-----|
 | `local` | PostgreSQL en localhost:5432 | Desarrollo local |
 | `railway` | PostgreSQL en Railway (env vars) | Producción en Railway |
+
+### Almacenamiento de imágenes
+- Sin variables de Cloudinary, la app sigue guardando en `uploads/eventos` localmente.
+- Con `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` y `CLOUDINARY_API_SECRET`, las nuevas imágenes de eventos y galería se suben a Cloudinary y persisten entre redeploys.
 
 ### Categorías Pre-cargadas
 Al iniciar la aplicación, se crean automáticamente 5 categorías:

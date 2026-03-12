@@ -5,19 +5,13 @@ import com.eventsphere.model.Foto;
 import com.eventsphere.model.Usuario;
 import com.eventsphere.repository.FotoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @Transactional
@@ -26,12 +20,9 @@ public class FotoService {
     @Autowired
     private FotoRepository fotoRepository;
 
-    @Value("${upload.path:uploads/eventos}")
-    private String uploadBase;
+    @Autowired
+    private ImageStorageService imageStorageService;
 
-    private String getUploadDir() {
-        return uploadBase + "/fotos/";
-    }
     public Foto subirFoto(Usuario usuario, Evento evento, MultipartFile archivo, String descripcion) throws IOException {
         // Validar archivo
         if (archivo.isEmpty()) {
@@ -49,23 +40,9 @@ public class FotoService {
             throw new IllegalArgumentException("El archivo no debe superar los 5MB");
         }
         
-        // Crear directorio si no existe
-        Path uploadPath = Paths.get(getUploadDir());
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-        
-        // Generar nombre único
-        String extension = getFileExtension(archivo.getOriginalFilename());
-        String nombreArchivo = UUID.randomUUID().toString() + extension;
-        Path destinoArchivo = uploadPath.resolve(nombreArchivo);
-        
-        // Guardar archivo
-        Files.copy(archivo.getInputStream(), destinoArchivo, StandardCopyOption.REPLACE_EXISTING);
-        
         // Crear entidad Foto
         Foto foto = new Foto();
-        foto.setUrl("/uploads/eventos/fotos/" + nombreArchivo);
+        foto.setUrl(imageStorageService.guardarImagenGaleria(archivo));
         foto.setDescripcion(descripcion);
         foto.setFechaSubida(LocalDateTime.now());
         foto.setUsuario(usuario);
@@ -85,15 +62,8 @@ public class FotoService {
     
     public void eliminarFoto(Long id) throws IOException {
         Foto foto = buscarPorId(id);
-        
-        // Eliminar archivo físico
-        String url = foto.getUrl();
-        String fileName = url.substring(url.lastIndexOf("/") + 1);
-        Path filePath = Paths.get(getUploadDir() + fileName);
-        
-        if (Files.exists(filePath)) {
-            Files.delete(filePath);
-        }
+
+        imageStorageService.eliminarImagen(foto.getUrl());
         
         // Eliminar de base de datos
         fotoRepository.delete(foto);
@@ -103,14 +73,4 @@ public class FotoService {
         return fotoRepository.countByEvento(evento);
     }
     
-    private String getFileExtension(String filename) {
-        if (filename == null) {
-            return "";
-        }
-        int lastDotIndex = filename.lastIndexOf(".");
-        if (lastDotIndex == -1) {
-            return "";
-        }
-        return filename.substring(lastDotIndex);
-    }
 }
