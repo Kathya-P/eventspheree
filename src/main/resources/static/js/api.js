@@ -404,6 +404,19 @@ function resolverUrlImagen(url) {
     return url;
 }
 
+function obtenerPlaceholderImagen(texto = 'Sin imagen') {
+    const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
+            <rect width="800" height="500" fill="#e9ecef"/>
+            <g fill="#6c757d" text-anchor="middle">
+                <text x="400" y="230" font-size="72">&#128247;</text>
+                <text x="400" y="300" font-size="28" font-family="Arial, sans-serif">${texto}</text>
+            </g>
+        </svg>
+    `;
+    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
 // Toast de notificación (reemplaza alert/confirm)
 function mostrarToast(mensaje, tipo = 'success') {
     let container = document.getElementById('toastContainer');

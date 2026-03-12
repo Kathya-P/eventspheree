@@ -33,14 +33,19 @@ function mostrarEvento(evento) {
     document.getElementById('eventoContainer').classList.remove('d-none');
     
     // Si hay imagen, usar la subida; si no, usar placeholder según categoría
-    const imagenUrl = resolverUrlImagen(evento.imagenUrl) || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&h=400&fit=crop';
+    const imagenUrl = resolverUrlImagen(evento.imagenUrl) || obtenerPlaceholderImagen('Evento sin imagen');
     const disponibles = evento.capacidad - evento.entradasVendidas;
     
     // Verificar si el usuario actual es el creador del evento
     const usuario = Utils.obtenerUsuarioLocal();
     const esEventoPropio = usuario && evento.organizador && evento.organizador.id === usuario.id;
     
-    document.getElementById('eventoImagen').src = imagenUrl;
+    const eventoImagen = document.getElementById('eventoImagen');
+    eventoImagen.src = imagenUrl;
+    eventoImagen.onerror = function() {
+        this.onerror = null;
+        this.src = obtenerPlaceholderImagen('Imagen no disponible');
+    };
     document.getElementById('eventoTitulo').textContent = evento.titulo;
     document.getElementById('eventoDescripcion').textContent = evento.descripcion || 'Sin descripción';
     document.getElementById('eventoFecha').textContent = Utils.formatearFecha(evento.fechaEvento);
@@ -528,6 +533,7 @@ function mostrarFotos(fotos) {
         <div class="col-md-4 col-sm-6">
             <div class="card h-100 shadow-sm">
                 <img src="${imgUrl}" class="card-img-top" style="height: 250px; object-fit: cover; cursor: pointer;"
+                     onerror="this.onerror=null;this.src=obtenerPlaceholderImagen('Foto no disponible');"
                      data-foto-index="${index}">
                 <div class="card-body p-2">
                     <p class="small mb-1">

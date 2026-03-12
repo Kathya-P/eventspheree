@@ -264,7 +264,7 @@ function mostrarEventos(eventos) {
 
 // Crear tarjeta vista grid
 function crearTarjetaGrid(evento, esEventoPropio = false) {
-    const imagenUrl = resolverUrlImagen(evento.imagenUrl) || `https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=250&fit=crop&q=80`;
+    const imagenUrl = resolverUrlImagen(evento.imagenUrl) || obtenerPlaceholderImagen('Evento sin imagen');
     const disponibles = evento.capacidad - evento.entradasVendidas;
     const porcentajeVendido = Math.round((evento.entradasVendidas / evento.capacidad) * 100);
     
@@ -299,7 +299,8 @@ function crearTarjetaGrid(evento, esEventoPropio = false) {
         <div class="col-lg-4 col-md-6">
             <div class="card h-100 border-0 shadow-sm position-relative">
                 ${badgePropio}
-                <img src="${imagenUrl}" class="card-img-top" alt="${evento.titulo}" 
+                 <img src="${imagenUrl}" class="card-img-top" alt="${evento.titulo}" 
+                     onerror="this.onerror=null;this.src=obtenerPlaceholderImagen('Imagen no disponible');"
                      style="height: 200px; object-fit: cover;">
                 <div class="card-body d-flex flex-column p-4">
                     <div class="mb-2">
@@ -349,7 +350,7 @@ function crearTarjetaGrid(evento, esEventoPropio = false) {
 
 // Crear tarjeta vista lista
 function crearTarjetaLista(evento) {
-    const imagenUrl = resolverUrlImagen(evento.imagenUrl) || `https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=200&h=150&fit=crop&q=80`;
+    const imagenUrl = resolverUrlImagen(evento.imagenUrl) || obtenerPlaceholderImagen('Evento sin imagen');
     const disponibles = evento.capacidad - evento.entradasVendidas;
     
     return `
@@ -358,7 +359,8 @@ function crearTarjetaLista(evento) {
                 <div class="card-body p-3">
                     <div class="row align-items-center">
                         <div class="col-md-2 col-sm-3">
-                            <img src="${imagenUrl}" class="img-fluid rounded" alt="${evento.titulo}" 
+                               <img src="${imagenUrl}" class="img-fluid rounded" alt="${evento.titulo}" 
+                                   onerror="this.onerror=null;this.src=obtenerPlaceholderImagen('Imagen no disponible');"
                                  style="height: 100px; width: 100%; object-fit: cover;">
                         </div>
                         <div class="col-md-6 col-sm-9 mt-3 mt-sm-0">

@@ -7,7 +7,9 @@ import com.eventsphere.repository.BoletoRepository;
 import com.eventsphere.repository.EventoRepository;
 import com.eventsphere.repository.FotoRepository;
 import com.eventsphere.repository.MensajeRepository;
+import com.eventsphere.repository.PagoRepository;
 import com.eventsphere.repository.ResenaRepository;
+import com.eventsphere.repository.ValidacionQRRepository;
 import com.eventsphere.validator.EventoValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,12 @@ public class EventoService {
 
     @Autowired
     private FotoRepository fotoRepository;
+
+    @Autowired
+    private PagoRepository pagoRepository;
+
+    @Autowired
+    private ValidacionQRRepository validacionQRRepository;
 
     @Autowired
     private EventoValidator eventoValidator;
@@ -114,6 +122,13 @@ public class EventoService {
     public void eliminarEvento(Long id) {
         Evento evento = eventoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
+        var boletos = boletoRepository.findByEvento(evento);
+
+        if (!boletos.isEmpty()) {
+            validacionQRRepository.deleteByBoletoIn(boletos);
+            pagoRepository.deleteByBoletoIn(boletos);
+        }
+
         // Borrar registros hijos para evitar errores de FK
         boletoRepository.deleteByEvento(evento);
         resenaRepository.deleteByEvento(evento);

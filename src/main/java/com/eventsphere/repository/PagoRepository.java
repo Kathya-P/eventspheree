@@ -1,5 +1,6 @@
 package com.eventsphere.repository;
 
+import com.eventsphere.model.Boleto;
 import com.eventsphere.model.Pago;
 import com.eventsphere.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +18,6 @@ public interface PagoRepository extends JpaRepository<Pago, Long> {
     Optional<Pago> findByReferenciaPago(String referenciaPago);
     
     List<Pago> findByUsuarioId(Long usuarioId);
+
+    void deleteByBoletoIn(List<Boleto> boletos);
 }

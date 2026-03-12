@@ -1,5 +1,6 @@
 package com.eventsphere.repository;
 
+import com.eventsphere.model.Boleto;
 import com.eventsphere.model.ValidacionQR;
 import com.eventsphere.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -30,4 +31,6 @@ public interface ValidacionQRRepository extends JpaRepository<ValidacionQR, Long
            "AND v.resultado = 'RECHAZADO' " +
            "AND v.fechaValidacion >= :fechaInicio")
     Long contarRechazadasHoy(@Param("validador") Usuario validador, @Param("fechaInicio") LocalDateTime fechaInicio);
+
+       void deleteByBoletoIn(List<Boleto> boletos);
 }

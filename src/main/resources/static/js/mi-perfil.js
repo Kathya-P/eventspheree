@@ -321,9 +321,10 @@ async function cargarMisEventos() {
                         <div class="col-md-6">
                             <div class="card h-100 border-0 shadow-sm">
                                 <div class="position-relative">
-                                    <img src="${resolverUrlImagen(evento.imagenUrl) || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=180&fit=crop&q=80'}" 
+                                     <img src="${resolverUrlImagen(evento.imagenUrl) || obtenerPlaceholderImagen('Evento sin imagen')}" 
                                          class="card-img-top" 
                                          alt="${evento.titulo}"
+                                         onerror="this.onerror=null;this.src=obtenerPlaceholderImagen('Imagen no disponible');"
                                          style="height: 180px; object-fit: cover;">
                                     <div class="position-absolute top-0 end-0 m-2">
                                         ${estadoBadge}
@@ -399,7 +400,8 @@ async function eliminarEvento(id, nombre) {
             mostrarToast('Evento eliminado', 'success');
             cargarMisEventos();
         } else {
-            mostrarToast('Error al eliminar evento', 'danger');
+            const mensaje = await response.text();
+            mostrarToast(mensaje || `No se pudo eliminar ${nombre}`, 'danger');
         }
     } catch (error) {
         console.error('Error:', error);
