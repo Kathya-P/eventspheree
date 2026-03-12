@@ -15,15 +15,13 @@ public class WebConfig implements WebMvcConfigurer {
     
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Servir imágenes de eventos desde el directorio de uploads
+        // Servir imágenes de eventos
         String uploadLocation = "file:" + Paths.get(uploadPath).toAbsolutePath().toString() + "/";
-        
         registry.addResourceHandler("/uploads/eventos/**")
                 .addResourceLocations(uploadLocation);
-        
+
         // Servir fotos de galería (comentarios de usuarios)
-        String fotosLocation = "file:" + Paths.get("src/main/resources/static/uploads/eventos/fotos").toAbsolutePath().toString() + "/";
-        
+        String fotosLocation = "file:" + Paths.get(uploadPath + "/fotos").toAbsolutePath().toString() + "/";
         registry.addResourceHandler("/uploads/eventos/fotos/**")
                 .addResourceLocations(fotosLocation);
     }
