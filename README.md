@@ -124,7 +124,17 @@ En la sección **Variables** del servicio app, agregar:
 SPRING_PROFILES_ACTIVE = railway
 ```
 
-Para que las nuevas imágenes queden guardadas de forma persistente, agrega también:
+### 5. Opción recomendada sin cuentas extra: volumen persistente de Railway
+1. En tu servicio app, abre la pestaña de almacenamiento o volúmenes.
+2. Crea un volumen y móntalo, por ejemplo, en `/data`.
+3. En **Variables**, agrega:
+```
+UPLOAD_PATH = /data/uploads/eventos
+```
+4. La app guardará ahí las nuevas imágenes y sobrevivirán a redeploys y reinicios.
+
+### 6. Opción alternativa: Cloudinary
+Si prefieres almacenamiento externo, agrega también:
 ```
 CLOUDINARY_CLOUD_NAME = tu_cloud_name
 CLOUDINARY_API_KEY = tu_api_key
@@ -133,7 +143,7 @@ CLOUDINARY_API_SECRET = tu_api_secret
 
 Cloudinary tiene plan gratuito y evita que Railway pierda archivos en cada redeploy.
 
-### 5. Deploy
+### 7. Deploy
 Railway hace el build con el `Dockerfile` y despliega automáticamente.
 La URL pública tendrá el formato: `https://tu-proyecto.up.railway.app/eventsphere`
 
@@ -145,6 +155,7 @@ La URL pública tendrá el formato: `https://tu-proyecto.up.railway.app/eventsph
 | `railway` | PostgreSQL en Railway (env vars) | Producción en Railway |
 
 ### Almacenamiento de imágenes
+- Con `UPLOAD_PATH` apuntando a un volumen persistente de Railway, las nuevas imágenes quedan guardadas sin usar servicios externos.
 - Sin variables de Cloudinary, la app sigue guardando en `uploads/eventos` localmente.
 - Con `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` y `CLOUDINARY_API_SECRET`, las nuevas imágenes de eventos y galería se suben a Cloudinary y persisten entre redeploys.
 
