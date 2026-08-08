@@ -22,7 +22,7 @@ public class Boleto {
     private Usuario usuario;
     
     @ManyToOne
-    @JoinColumn(= "evento_id", nullable = false)
+    @JoinColumn(name = "evento_id", nullable = false)
     private Evento evento;
     
     @Column(nullable = false, length = 20)
